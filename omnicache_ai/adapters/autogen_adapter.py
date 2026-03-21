@@ -108,7 +108,7 @@ class AutoGenCacheAdapter:
         messages: list[dict[str, Any]] | None = None,
         sender: Any = None,
         **kwargs: Any,
-    ) -> str | None:
+    ) -> Any:
         """Cached generate_reply for pyautogen 0.2.x agents."""
         msgs = messages or []
         key = self._key_from_messages(msgs)

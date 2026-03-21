@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import builtins
 import pickle
 from typing import TYPE_CHECKING, Any, Iterator
 
@@ -253,12 +254,12 @@ class LangGraphCacheAdapter(BaseCheckpointSaver):  # type: ignore[misc]
     async def aput_writes(
         self,
         config: dict[str, Any],
-        writes: list[tuple[str, Any]],
+        writes: builtins.list[tuple[str, Any]],
         task_id: str,
     ) -> None:
         self.put_writes(config, writes, task_id)
 
-    async def alist(
+    async def alist(  # type: ignore[override]
         self,
         config: dict[str, Any],
         *,
@@ -266,7 +267,7 @@ class LangGraphCacheAdapter(BaseCheckpointSaver):  # type: ignore[misc]
         before: dict[str, Any] | None = None,
         limit: int | None = None,
     ) -> Any:
-        for item in self.list(config, filter=filter, before=before, limit=limit):
+        for item in self.list(config, filter=filter, before=before, limit=limit):  # type: ignore[arg-type]
             yield item
 
     def get_next_version(self, current: Any, channel: Any) -> Any:

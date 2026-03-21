@@ -41,9 +41,7 @@ class RetrieverMiddleware:
         if asyncio.iscoroutinefunction(retrieve_fn):
 
             @functools.wraps(retrieve_fn)
-            async def async_wrapper(
-                query: str, top_k: int | None = None, **kwargs: Any
-            ) -> list[Any]:
+            async def async_wrapper(query: str, top_k: int | None = None, **kwargs: Any) -> Any:
                 k = top_k if top_k is not None else self._default_top_k
                 cached = self._cache.get(query, self._retriever_id, k)
                 if cached is not None:
@@ -56,7 +54,7 @@ class RetrieverMiddleware:
         else:
 
             @functools.wraps(retrieve_fn)
-            def sync_wrapper(query: str, top_k: int | None = None, **kwargs: Any) -> list[Any]:
+            def sync_wrapper(query: str, top_k: int | None = None, **kwargs: Any) -> Any:
                 k = top_k if top_k is not None else self._default_top_k
                 cached = self._cache.get(query, self._retriever_id, k)
                 if cached is not None:

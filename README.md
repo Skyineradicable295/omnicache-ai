@@ -1,20 +1,20 @@
 <div align="center">
   <img src="assets/omnicache_logo.png" alt="OmniCache-AI Logo" width="280"/>
 
-  <h1>omnicache-ai</h1>
+<h1>omnicache-ai</h1>
 
-  <p><strong>Unified multi-layer caching for AI &amp; agent pipelines.</strong><br/>
+<p><strong>Unified multi-layer caching for AI Agent pipelines.</strong><br/>
   Drop it in front of any LLM call, embedding, retrieval query, or agent workflow<br/>
   to eliminate redundant API calls and cut latency and cost.</p>
 
-  [![Python](https://img.shields.io/badge/python-3.12%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
-  [![PyPI](https://img.shields.io/badge/PyPI-omnicache--ai-orange?logo=pypi&logoColor=white)](https://pypi.org/project/omnicache-ai/)
-  [![License: MIT](https://img.shields.io/badge/license-MIT-22c55e)](LICENSE)
-  [![LangChain](https://img.shields.io/badge/LangChain-1.x-1C3C3C?logo=langchain)](https://python.langchain.com/)
-  [![LangGraph](https://img.shields.io/badge/LangGraph-1.x-1C3C3C)](https://langchain-ai.github.io/langgraph/)
-  [![AutoGen](https://img.shields.io/badge/AutoGen-0.4%2B-0078D4?logo=microsoft)](https://microsoft.github.io/autogen/)
-  [![CrewAI](https://img.shields.io/badge/CrewAI-1.x-FF4B4B)](https://www.crewai.com/)
-  [![Agno](https://img.shields.io/badge/Agno-2.x-6366F1)](https://www.agno.com/)
+[![Python](https://img.shields.io/badge/python-3.12%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
+[![PyPI](https://img.shields.io/badge/PyPI-omnicache--ai-orange?logo=pypi&logoColor=white)](https://pypi.org/project/omnicache-ai/)
+[![License: MIT](https://img.shields.io/badge/license-MIT-22c55e)](LICENSE)
+[![LangChain](https://img.shields.io/badge/LangChain-1.x-1C3C3C?logo=langchain)](https://python.langchain.com/)
+[![LangGraph](https://img.shields.io/badge/LangGraph-1.x-1C3C3C)](https://langchain-ai.github.io/langgraph/)
+[![AutoGen](https://img.shields.io/badge/AutoGen-0.4%2B-0078D4?logo=microsoft)](https://microsoft.github.io/autogen/)
+[![CrewAI](https://img.shields.io/badge/CrewAI-1.x-FF4B4B)](https://www.crewai.com/)
+[![Agno](https://img.shields.io/badge/Agno-2.x-6366F1)](https://www.agno.com/)
 
 </div>
 
@@ -42,13 +42,13 @@
 
 Every AI agent pipeline makes the same expensive calls repeatedly:
 
-| Without caching | With omnicache-ai |
-|---|---|
-| Every LLM call billed at full token cost | Identical prompts returned instantly, zero tokens |
-| Embeddings re-computed on every request | Vectors stored and reused across sessions |
-| Vector search re-run for same queries | Retrieval results cached by query + top-k |
-| Agent state lost between runs | Session context persisted across turns |
-| Semantically identical questions treated as new | Cosine similarity match returns cached answer |
+| Without caching                                 | With omnicache-ai                                 |
+| ----------------------------------------------- | ------------------------------------------------- |
+| Every LLM call billed at full token cost        | Identical prompts returned instantly, zero tokens |
+| Embeddings re-computed on every request         | Vectors stored and reused across sessions         |
+| Vector search re-run for same queries           | Retrieval results cached by query + top-k         |
+| Agent state lost between runs                   | Session context persisted across turns            |
+| Semantically identical questions treated as new | Cosine similarity match returns cached answer     |
 
 ---
 
@@ -56,55 +56,55 @@ Every AI agent pipeline makes the same expensive calls repeatedly:
 
 ### Cache Layers
 
-| Layer | Class | What it caches | Serialization |
-|---|---|---|---|
-| LLM Response | `ResponseCache` | Model output keyed by model + messages + params | pickle |
-| Embeddings | `EmbeddingCache` | `np.ndarray` vectors keyed by model + text | `np.tobytes()` |
-| Retrieval | `RetrievalCache` | Document lists keyed by query + retriever + top-k | pickle |
-| Context/Session | `ContextCache` | Conversation turns keyed by session ID + turn index | pickle |
-| Semantic | `SemanticCache` | Answers reused for semantically similar queries (cosine ≥ threshold) | pickle |
+| Layer           | Class            | What it caches                                                       | Serialization  |
+| --------------- | ---------------- | -------------------------------------------------------------------- | -------------- |
+| LLM Response    | `ResponseCache`  | Model output keyed by model + messages + params                      | pickle         |
+| Embeddings      | `EmbeddingCache` | `np.ndarray` vectors keyed by model + text                           | `np.tobytes()` |
+| Retrieval       | `RetrievalCache` | Document lists keyed by query + retriever + top-k                    | pickle         |
+| Context/Session | `ContextCache`   | Conversation turns keyed by session ID + turn index                  | pickle         |
+| Semantic        | `SemanticCache`  | Answers reused for semantically similar queries (cosine ≥ threshold) | pickle         |
 
 ### Storage Backends
 
-| Backend | Class | Extras | Best For |
-|---|---|---|---|
-| In-Memory (LRU) | `InMemoryBackend` | — (core) | Dev, testing, single-process |
-| Disk | `DiskBackend` | — (core) | Persistent, single-machine |
-| Redis | `RedisBackend` | `[redis]` | Shared across processes / services |
-| FAISS | `FAISSBackend` | `[vector-faiss]` | High-speed vector similarity |
-| ChromaDB | `ChromaBackend` | `[vector-chroma]` | Persistent vector store + metadata |
+| Backend         | Class             | Extras            | Best For                           |
+| --------------- | ----------------- | ----------------- | ---------------------------------- |
+| In-Memory (LRU) | `InMemoryBackend` | — (core)          | Dev, testing, single-process       |
+| Disk            | `DiskBackend`     | — (core)          | Persistent, single-machine         |
+| Redis           | `RedisBackend`    | `[redis]`         | Shared across processes / services |
+| FAISS           | `FAISSBackend`    | `[vector-faiss]`  | High-speed vector similarity       |
+| ChromaDB        | `ChromaBackend`   | `[vector-chroma]` | Persistent vector store + metadata |
 
 ### Framework Adapters
 
-| Framework | Class | Hook Point | Async |
-|---|---|---|---|
-| LangChain ≥ 0.2 | `LangChainCacheAdapter` | `BaseCache` — `lookup` / `update` | ✅ `alookup` / `aupdate` |
-| LangGraph ≥ 0.1 / 1.x | `LangGraphCacheAdapter` | `BaseCheckpointSaver` — `get_tuple` / `put` / `list` | ✅ `aget_tuple` / `aput` / `alist` |
-| AutoGen ≥ 0.4 | `AutoGenCacheAdapter` | `AssistantAgent.run()` / `arun()` | ✅ `arun` |
-| AutoGen 0.2.x | `AutoGenCacheAdapter` | `ConversableAgent.generate_reply()` | — |
-| CrewAI ≥ 0.28 | `CrewAICacheAdapter` | `Crew.kickoff()` | ✅ `kickoff_async` |
-| Agno ≥ 0.1 | `AgnoCacheAdapter` | `Agent.run()` / `arun()` | ✅ `arun` |
-| A2A ≥ 0.2 | `A2ACacheAdapter` | `process()` / `wrap()` decorator | ✅ `aprocess` |
+| Framework             | Class                   | Hook Point                                           | Async                             |
+| --------------------- | ----------------------- | ---------------------------------------------------- | --------------------------------- |
+| LangChain ≥ 0.2       | `LangChainCacheAdapter` | `BaseCache` — `lookup` / `update`                    | ✅`alookup` / `aupdate`           |
+| LangGraph ≥ 0.1 / 1.x | `LangGraphCacheAdapter` | `BaseCheckpointSaver` — `get_tuple` / `put` / `list` | ✅`aget_tuple` / `aput` / `alist` |
+| AutoGen ≥ 0.4         | `AutoGenCacheAdapter`   | `AssistantAgent.run()` / `arun()`                    | ✅`arun`                          |
+| AutoGen 0.2.x         | `AutoGenCacheAdapter`   | `ConversableAgent.generate_reply()`                  | —                                 |
+| CrewAI ≥ 0.28         | `CrewAICacheAdapter`    | `Crew.kickoff()`                                     | ✅`kickoff_async`                 |
+| Agno ≥ 0.1            | `AgnoCacheAdapter`      | `Agent.run()` / `arun()`                             | ✅`arun`                          |
+| A2A ≥ 0.2             | `A2ACacheAdapter`       | `process()` / `wrap()` decorator                     | ✅`aprocess`                      |
 
 ### Middleware
 
-| Class | Wraps | Async |
-|---|---|---|
-| `LLMMiddleware` | Any sync LLM callable | — |
-| `AsyncLLMMiddleware` | Any async LLM callable | ✅ |
-| `EmbeddingMiddleware` | Any sync/async embed function | ✅ |
-| `RetrieverMiddleware` | Any sync/async retriever | ✅ |
+| Class                 | Wraps                         | Async |
+| --------------------- | ----------------------------- | ----- |
+| `LLMMiddleware`       | Any sync LLM callable         | —     |
+| `AsyncLLMMiddleware`  | Any async LLM callable        | ✅    |
+| `EmbeddingMiddleware` | Any sync/async embed function | ✅    |
+| `RetrieverMiddleware` | Any sync/async retriever      | ✅    |
 
 ### Core Engine
 
-| Component | Class | Description |
-|---|---|---|
-| Orchestrator | `CacheManager` | Central hub — wires backend, key builder, TTL policy, invalidation |
-| Key Builder | `CacheKeyBuilder` | `namespace:type:sha256[:16]` canonical keys |
-| TTL Policy | `TTLPolicy` | Global + per-layer TTL overrides |
-| Eviction | `EvictionPolicy` | LRU / LFU / TTL-only strategies |
-| Invalidation | `InvalidationEngine` | Tag-based bulk eviction |
-| Settings | `OmnicacheSettings` | Dataclass + `from_env()` for 12-factor config |
+| Component    | Class                | Description                                                        |
+| ------------ | -------------------- | ------------------------------------------------------------------ |
+| Orchestrator | `CacheManager`       | Central hub — wires backend, key builder, TTL policy, invalidation |
+| Key Builder  | `CacheKeyBuilder`    | `namespace:type:sha256[:16]` canonical keys                        |
+| TTL Policy   | `TTLPolicy`          | Global + per-layer TTL overrides                                   |
+| Eviction     | `EvictionPolicy`     | LRU / LFU / TTL-only strategies                                    |
+| Invalidation | `InvalidationEngine` | Tag-based bulk eviction                                            |
+| Settings     | `OmnicacheSettings`  | Dataclass +`from_env()` for 12-factor config                       |
 
 ---
 
@@ -338,18 +338,18 @@ python -c "import omnicache_ai; print(omnicache_ai.__version__)"
 
 ### Environment variable configuration
 
-| Variable | Default | Values |
-|---|---|---|
-| `OMNICACHE_BACKEND` | `memory` | `memory` · `disk` · `redis` |
-| `OMNICACHE_REDIS_URL` | `redis://localhost:6379/0` | Any Redis URL |
-| `OMNICACHE_DISK_PATH` | `/tmp/omnicache` | Any writable path |
-| `OMNICACHE_DEFAULT_TTL` | `3600` | Seconds; `0` = no expiry |
-| `OMNICACHE_NAMESPACE` | `omnicache` | Key prefix string |
-| `OMNICACHE_SEMANTIC_THRESHOLD` | `0.95` | Float 0–1 |
-| `OMNICACHE_TTL_EMBEDDING` | `86400` | Per-layer override |
-| `OMNICACHE_TTL_RETRIEVAL` | `3600` | Per-layer override |
-| `OMNICACHE_TTL_CONTEXT` | `1800` | Per-layer override |
-| `OMNICACHE_TTL_RESPONSE` | `600` | Per-layer override |
+| Variable                       | Default                    | Values                      |
+| ------------------------------ | -------------------------- | --------------------------- |
+| `OMNICACHE_BACKEND`            | `memory`                   | `memory` · `disk` · `redis` |
+| `OMNICACHE_REDIS_URL`          | `redis://localhost:6379/0` | Any Redis URL               |
+| `OMNICACHE_DISK_PATH`          | `/tmp/omnicache`           | Any writable path           |
+| `OMNICACHE_DEFAULT_TTL`        | `3600`                     | Seconds;`0` = no expiry     |
+| `OMNICACHE_NAMESPACE`          | `omnicache`                | Key prefix string           |
+| `OMNICACHE_SEMANTIC_THRESHOLD` | `0.95`                     | Float 0–1                   |
+| `OMNICACHE_TTL_EMBEDDING`      | `86400`                    | Per-layer override          |
+| `OMNICACHE_TTL_RETRIEVAL`      | `3600`                     | Per-layer override          |
+| `OMNICACHE_TTL_CONTEXT`        | `1800`                     | Per-layer override          |
+| `OMNICACHE_TTL_RESPONSE`       | `600`                      | Per-layer override          |
 
 ```bash
 export OMNICACHE_BACKEND=redis
@@ -629,13 +629,13 @@ ctx.invalidate_session("user-123")      # clear all session turns
 
 ## Backends
 
-| Backend | Extra | Use case |
-|---|---|---|
-| `InMemoryBackend` | — | Dev, testing, single-process |
-| `DiskBackend` | — | Survives restarts, single-machine |
-| `RedisBackend` | `[redis]` | Shared cache across processes/services |
-| `FAISSBackend` | `[vector-faiss]` | Semantic/vector similarity search |
-| `ChromaBackend` | `[vector-chroma]` | Persistent vector store with metadata |
+| Backend           | Extra             | Use case                               |
+| ----------------- | ----------------- | -------------------------------------- |
+| `InMemoryBackend` | —                 | Dev, testing, single-process           |
+| `DiskBackend`     | —                 | Survives restarts, single-machine      |
+| `RedisBackend`    | `[redis]`         | Shared cache across processes/services |
+| `FAISSBackend`    | `[vector-faiss]`  | Semantic/vector similarity search      |
+| `ChromaBackend`   | `[vector-chroma]` | Persistent vector store with metadata  |
 
 ```python
 from omnicache_ai.backends.redis_backend import RedisBackend

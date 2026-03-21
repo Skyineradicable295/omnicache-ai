@@ -19,7 +19,7 @@ except ImportError:
     _LANGCHAIN_AVAILABLE = False
 
 
-class LangChainCacheAdapter(BaseCache):
+class LangChainCacheAdapter(BaseCache):  # type: ignore[misc]
     """Implements langchain_core.caches.BaseCache using omnicache_ai.
 
     Register globally::
