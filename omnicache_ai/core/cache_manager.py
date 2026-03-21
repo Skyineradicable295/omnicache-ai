@@ -1,0 +1,207 @@
+"""Central cache orchestrator."""
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Any
+
+import numpy as np
+
+from omnicache_ai.backends.base import CacheBackend, VectorBackend
+from omnicache_ai.core.invalidation import InvalidationEngine
+from omnicache_ai.core.key_builder import CacheKeyBuilder
+from omnicache_ai.core.policies import TTLPolicy
+
+if TYPE_CHECKING:
+    from omnicache_ai.config.settings import OmnicacheSettings
+
+
+class CacheManager:
+    """Central orchestrator wiring backend, key builder, TTL policy, and vector backend.
+
+    Usage (simple)::
+
+        from omnicache_ai import CacheManager, InMemoryBackend, CacheKeyBuilder
+
+        manager = CacheManager(
+            backend=InMemoryBackend(),
+            key_builder=CacheKeyBuilder(),
+        )
+        manager.set("mykey", {"answer": 42}, ttl=60)
+        value = manager.get("mykey")
+
+    Usage (from settings)::
+
+        from omnicache_ai import CacheManager, OmnicacheSettings
+
+        manager = CacheManager.from_settings(OmnicacheSettings(backend="disk"))
+
+    Args:
+        backend: Primary key-value cache backend.
+        key_builder: Key construction helper.
+        ttl_policy: TTL rules per cache type (optional).
+        vector_backend: Optional vector similarity backend for semantic search.
+        invalidation_engine: Optional tag-based invalidation engine.
+        semantic_threshold: Minimum cosine similarity for a semantic cache hit.
+    """
+
+    def __init__(
+        self,
+        backend: CacheBackend,
+        key_builder: CacheKeyBuilder,
+        ttl_policy: TTLPolicy | None = None,
+        vector_backend: VectorBackend | None = None,
+        invalidation_engine: InvalidationEngine | None = None,
+        semantic_threshold: float = 0.95,
+    ) -> None:
+        self._backend = backend
+        self._key_builder = key_builder
+        self._ttl_policy = ttl_policy or TTLPolicy()
+        self._vector_backend = vector_backend
+        self._invalidation = invalidation_engine
+        self._threshold = semantic_threshold
+
+    # ------------------------------------------------------------------
+    # Public API
+    # ------------------------------------------------------------------
+
+    def get(
+        self,
+        key: str,
+        semantic: bool = False,
+        vector: np.ndarray | None = None,
+    ) -> Any | None:
+        """Retrieve a cached value.
+
+        Args:
+            key: Cache key (pre-built or raw — used for exact lookup).
+            semantic: If True and vector_backend is configured, attempt a
+                      nearest-neighbour lookup instead of an exact hit.
+            vector: Query embedding for semantic lookup (required when semantic=True).
+
+        Returns:
+            Cached value or None on miss.
+        """
+        if semantic and self._vector_backend is not None and vector is not None:
+            results = self._vector_backend.search(vector, top_k=1)
+            if results:
+                best_key, score = results[0]
+                if score >= self._threshold:
+                    return self._backend.get(best_key)
+            return None
+        return self._backend.get(key)
+
+    def set(
+        self,
+        key: str,
+        value: Any,
+        ttl: int | None = None,
+        vector: np.ndarray | None = None,
+        tags: list[str] | None = None,
+        cache_type: str = "response",
+    ) -> None:
+        """Store a value in the cache.
+
+        Args:
+            key: Cache key.
+            value: Value to store.
+            ttl: Time-to-live in seconds. Falls back to TTLPolicy default.
+            vector: If provided, also indexes the vector in vector_backend.
+            tags: Invalidation tags to associate with this key.
+            cache_type: Used to resolve TTL from TTLPolicy when ttl is None.
+        """
+        effective_ttl = ttl if ttl is not None else self._ttl_policy.ttl_for(cache_type)
+        self._backend.set(key, value, effective_ttl)
+        if vector is not None and self._vector_backend is not None:
+            self._vector_backend.add(key, vector, {"value": value})
+        if tags and self._invalidation is not None:
+            self._invalidation.register(key, tags)
+
+    def delete(self, key: str) -> None:
+        """Remove a key from the cache."""
+        self._backend.delete(key)
+        if self._vector_backend is not None:
+            self._vector_backend.delete(key)
+
+    def exists(self, key: str) -> bool:
+        """Check if a key exists in the cache."""
+        return self._backend.exists(key)
+
+    def invalidate(self, tag: str) -> int:
+        """Invalidate all keys associated with a tag.
+
+        Returns:
+            Number of keys removed.
+        """
+        if self._invalidation is None:
+            return 0
+        return self._invalidation.invalidate_tag(tag, self._backend)
+
+    def clear(self) -> None:
+        """Flush all cache entries."""
+        self._backend.clear()
+        if self._vector_backend is not None:
+            self._vector_backend.clear()
+
+    def close(self) -> None:
+        """Release all resources."""
+        self._backend.close()
+        if self._vector_backend is not None:
+            self._vector_backend.close()
+
+    # ------------------------------------------------------------------
+    # Convenience accessors
+    # ------------------------------------------------------------------
+
+    @property
+    def key_builder(self) -> CacheKeyBuilder:
+        return self._key_builder
+
+    @property
+    def ttl_policy(self) -> TTLPolicy:
+        return self._ttl_policy
+
+    # ------------------------------------------------------------------
+    # Factory
+    # ------------------------------------------------------------------
+
+    @classmethod
+    def from_settings(cls, settings: "OmnicacheSettings") -> "CacheManager":
+        """Construct a CacheManager from an OmnicacheSettings instance.
+
+        Selects the correct backend and wires everything together.
+        """
+        from omnicache_ai.backends.memory_backend import InMemoryBackend
+        from omnicache_ai.backends.disk_backend import DiskBackend
+
+        if settings.backend == "redis":
+            from omnicache_ai.backends.redis_backend import RedisBackend
+            backend: CacheBackend = RedisBackend(url=settings.redis_url)
+        elif settings.backend == "disk":
+            backend = DiskBackend(directory=settings.disk_path)
+        else:
+            backend = InMemoryBackend(max_size=settings.max_memory_entries)
+
+        vector_backend: VectorBackend | None = None
+        if settings.vector_backend == "faiss":
+            from omnicache_ai.backends.vector_backend import FAISSBackend
+            vector_backend = FAISSBackend(dim=settings.embedding_dim)
+        elif settings.vector_backend == "chroma":
+            from omnicache_ai.backends.vector_backend import ChromaBackend
+            vector_backend = ChromaBackend()
+
+        key_builder = CacheKeyBuilder(
+            namespace=settings.namespace,
+            algo=settings.key_hash_algo,
+        )
+        ttl_policy = TTLPolicy.from_settings(settings)
+
+        tag_store = InMemoryBackend()
+        invalidation_engine = InvalidationEngine(tag_store=tag_store)
+
+        return cls(
+            backend=backend,
+            key_builder=key_builder,
+            ttl_policy=ttl_policy,
+            vector_backend=vector_backend,
+            invalidation_engine=invalidation_engine,
+            semantic_threshold=settings.semantic_threshold,
+        )

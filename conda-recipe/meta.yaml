@@ -1,0 +1,48 @@
+{% set name = "omnicache-ai" %}
+{% set version = "0.1.0" %}
+
+package:
+  name: {{ name }}
+  version: {{ version }}
+
+source:
+  url: https://pypi.org/packages/source/o/{{ name }}/{{ name.replace('-', '_') }}-{{ version }}.tar.gz
+  # sha256: UPDATE_AFTER_FIRST_PYPI_RELEASE
+
+build:
+  noarch: python
+  number: 0
+  script: {{ PYTHON }} -m pip install . -vv --no-deps --no-build-isolation
+
+requirements:
+  host:
+    - python >=3.12
+    - pip
+    - hatchling
+  run:
+    - python >=3.12
+    - diskcache >=5.6
+    - numpy >=1.26
+
+test:
+  imports:
+    - omnicache_ai
+  commands:
+    - python -c "from omnicache_ai import CacheManager; print('OK')"
+
+about:
+  home: https://github.com/ashishpatel26/omnicache-ai
+  license: MIT
+  license_family: MIT
+  license_file: LICENSE
+  summary: Unified caching layer for AI/agent frameworks
+  description: |
+    omnicache-ai provides a unified, multi-layer caching library for AI and
+    agent pipelines. It supports LangChain, LangGraph, AutoGen, CrewAI, Agno,
+    and A2A frameworks with 5 cache layers, 4 storage backends, semantic
+    caching, and tag-based invalidation.
+  dev_url: https://github.com/ashishpatel26/omnicache-ai
+
+extra:
+  recipe-maintainers:
+    - ashishpatel26
