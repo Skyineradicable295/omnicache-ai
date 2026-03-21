@@ -1,7 +1,7 @@
 """Tests for DiskBackend."""
+
 from __future__ import annotations
 
-import pytest
 
 from omnicache_ai.backends.disk_backend import DiskBackend
 

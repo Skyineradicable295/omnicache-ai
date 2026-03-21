@@ -1,4 +1,5 @@
 """Embedding cache layer."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Callable
@@ -26,9 +27,7 @@ class EmbeddingCache:
 
     def get(self, text: str, model_id: str = "default") -> np.ndarray | None:
         """Retrieve a cached embedding, or None on miss."""
-        key = self._manager.key_builder.build(
-            "embedding", text, extra={"model": model_id}
-        )
+        key = self._manager.key_builder.build("embedding", text, extra={"model": model_id})
         raw = self._manager.get(key)
         if raw is None:
             return None
@@ -42,9 +41,7 @@ class EmbeddingCache:
         ttl: int | None = None,
     ) -> None:
         """Store an embedding in the cache."""
-        key = self._manager.key_builder.build(
-            "embedding", text, extra={"model": model_id}
-        )
+        key = self._manager.key_builder.build("embedding", text, extra={"model": model_id})
         self._manager.set(
             key,
             vector.astype(np.float32).tobytes(),

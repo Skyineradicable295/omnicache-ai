@@ -1,4 +1,5 @@
 """LLM call interception middleware."""
+
 from __future__ import annotations
 
 import asyncio
@@ -82,6 +83,7 @@ class AsyncLLMMiddleware:
 
     def __call__(self, llm_fn: Callable[..., Any]) -> Callable[..., Any]:
         if asyncio.iscoroutinefunction(llm_fn):
+
             @functools.wraps(llm_fn)
             async def async_wrapper(*args: Any, **kwargs: Any) -> Any:
                 messages = args[0] if args else kwargs.get("messages", [])
@@ -96,6 +98,7 @@ class AsyncLLMMiddleware:
 
             return async_wrapper
         else:
+
             @functools.wraps(llm_fn)
             def sync_wrapper(*args: Any, **kwargs: Any) -> Any:
                 messages = args[0] if args else kwargs.get("messages", [])

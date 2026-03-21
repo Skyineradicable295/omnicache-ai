@@ -1,4 +1,5 @@
 """LangGraph checkpoint adapter — compatible with langgraph >=0.1, >=1.x."""
+
 from __future__ import annotations
 
 import pickle
@@ -14,9 +15,11 @@ try:
         BaseCheckpointSaver,
         CheckpointTuple,
     )
+
     try:
         # langgraph >=1.0 — new_versions param required on put()
-        from langgraph.checkpoint.base import ChannelVersions  # type: ignore[import-untyped]
+        from langgraph.checkpoint.base import ChannelVersions  # type: ignore[import-untyped]  # noqa: F401
+
         _LG_V1 = True
     except ImportError:
         _LG_V1 = False
@@ -148,6 +151,7 @@ class LangGraphCacheAdapter(BaseCheckpointSaver):  # type: ignore[misc]
 
         # Generate checkpoint_id from metadata if not present (langgraph 1.x)
         import time as _time
+
         if not cid:
             cid = str(_time.monotonic_ns())
 

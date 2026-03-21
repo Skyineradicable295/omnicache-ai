@@ -1,4 +1,5 @@
 """Tests for TTLPolicy and EvictionPolicy."""
+
 from __future__ import annotations
 
 from omnicache_ai.core.policies import TTLPolicy, EvictionPolicy

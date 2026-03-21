@@ -1,4 +1,5 @@
 """Tests for InvalidationEngine."""
+
 from __future__ import annotations
 
 from omnicache_ai.backends.memory_backend import InMemoryBackend

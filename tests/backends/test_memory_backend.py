@@ -1,9 +1,7 @@
 """Tests for InMemoryBackend."""
+
 from __future__ import annotations
 
-import time
-
-import pytest
 
 from omnicache_ai.backends.memory_backend import InMemoryBackend
 

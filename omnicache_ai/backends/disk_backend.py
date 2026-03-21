@@ -1,4 +1,5 @@
 """Disk-based cache backend using diskcache."""
+
 from __future__ import annotations
 
 from typing import Any

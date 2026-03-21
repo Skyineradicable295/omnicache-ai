@@ -1,14 +1,15 @@
 """Tests for LangChainCacheAdapter — skipped if langchain-core not installed."""
+
 from __future__ import annotations
 
 import pytest
 
 langchain_core = pytest.importorskip("langchain_core", reason="langchain-core not installed")
 
-from omnicache_ai.adapters.langchain_adapter import LangChainCacheAdapter
-from omnicache_ai.backends.memory_backend import InMemoryBackend
-from omnicache_ai.core.cache_manager import CacheManager
-from omnicache_ai.core.key_builder import CacheKeyBuilder
+from omnicache_ai.adapters.langchain_adapter import LangChainCacheAdapter  # noqa: E402
+from omnicache_ai.backends.memory_backend import InMemoryBackend  # noqa: E402
+from omnicache_ai.core.cache_manager import CacheManager  # noqa: E402
+from omnicache_ai.core.key_builder import CacheKeyBuilder  # noqa: E402
 
 
 @pytest.fixture

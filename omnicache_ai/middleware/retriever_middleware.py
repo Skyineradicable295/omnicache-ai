@@ -1,4 +1,5 @@
 """Retriever call interception middleware."""
+
 from __future__ import annotations
 
 import asyncio
@@ -36,12 +37,13 @@ class RetrieverMiddleware:
         self._retriever_id = retriever_id
         self._default_top_k = default_top_k
 
-    def __call__(
-        self, retrieve_fn: Callable[..., Any]
-    ) -> Callable[..., Any]:
+    def __call__(self, retrieve_fn: Callable[..., Any]) -> Callable[..., Any]:
         if asyncio.iscoroutinefunction(retrieve_fn):
+
             @functools.wraps(retrieve_fn)
-            async def async_wrapper(query: str, top_k: int | None = None, **kwargs: Any) -> list[Any]:
+            async def async_wrapper(
+                query: str, top_k: int | None = None, **kwargs: Any
+            ) -> list[Any]:
                 k = top_k if top_k is not None else self._default_top_k
                 cached = self._cache.get(query, self._retriever_id, k)
                 if cached is not None:
@@ -52,6 +54,7 @@ class RetrieverMiddleware:
 
             return async_wrapper
         else:
+
             @functools.wraps(retrieve_fn)
             def sync_wrapper(query: str, top_k: int | None = None, **kwargs: Any) -> list[Any]:
                 k = top_k if top_k is not None else self._default_top_k

@@ -1,4 +1,5 @@
 """AutoGen cache adapter — supports both pyautogen 0.2.x and autogen-agentchat 0.4+."""
+
 from __future__ import annotations
 
 import json
@@ -14,6 +15,7 @@ try:
         AssistantAgent,
         UserProxyAgent,
     )
+
     _AUTOGEN_V2 = True
 except ImportError:
     AssistantAgent = None  # type: ignore[assignment,misc]
@@ -23,6 +25,7 @@ except ImportError:
 # pyautogen 0.2.x / autogen 0.2 (legacy API: autogen.ConversableAgent)
 try:
     from autogen import ConversableAgent  # type: ignore[import-untyped]
+
     _AUTOGEN_V1 = True
 except ImportError:
     ConversableAgent = None  # type: ignore[assignment,misc]
@@ -73,8 +76,10 @@ class AutoGenCacheAdapter:
 
         # Detect which API generation the wrapped agent uses
         self._is_v2 = _AUTOGEN_V2 and (
-            AssistantAgent is not None and isinstance(agent, AssistantAgent)
-            or UserProxyAgent is not None and isinstance(agent, UserProxyAgent)
+            AssistantAgent is not None
+            and isinstance(agent, AssistantAgent)
+            or UserProxyAgent is not None
+            and isinstance(agent, UserProxyAgent)
         )
 
     # ------------------------------------------------------------------
@@ -84,14 +89,14 @@ class AutoGenCacheAdapter:
     def _key_from_messages(self, messages: list[Any]) -> str:
         payload = json.dumps(messages, sort_keys=True, default=str)
         agent_name = getattr(self._agent, "name", "agent")
-        return self._manager.key_builder.build(
-            "response", payload, extra={"agent": agent_name}
-        )
+        return self._manager.key_builder.build("response", payload, extra={"agent": agent_name})
 
     def _key_from_str(self, message: str, **kwargs: Any) -> str:
         agent_name = getattr(self._agent, "name", "agent")
         return self._manager.key_builder.build(
-            "response", message, extra={"agent": agent_name, **{k: str(v) for k, v in kwargs.items()}}
+            "response",
+            message,
+            extra={"agent": agent_name, **{k: str(v) for k, v in kwargs.items()}},
         )
 
     # ------------------------------------------------------------------

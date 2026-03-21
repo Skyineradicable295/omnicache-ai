@@ -1,4 +1,5 @@
 """Redis cache backend (optional dependency)."""
+
 from __future__ import annotations
 
 import pickle

@@ -1,4 +1,5 @@
 """Central cache orchestrator."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
@@ -174,6 +175,7 @@ class CacheManager:
 
         if settings.backend == "redis":
             from omnicache_ai.backends.redis_backend import RedisBackend
+
             backend: CacheBackend = RedisBackend(url=settings.redis_url)
         elif settings.backend == "disk":
             backend = DiskBackend(directory=settings.disk_path)
@@ -183,9 +185,11 @@ class CacheManager:
         vector_backend: VectorBackend | None = None
         if settings.vector_backend == "faiss":
             from omnicache_ai.backends.vector_backend import FAISSBackend
+
             vector_backend = FAISSBackend(dim=settings.embedding_dim)
         elif settings.vector_backend == "chroma":
             from omnicache_ai.backends.vector_backend import ChromaBackend
+
             vector_backend = ChromaBackend()
 
         key_builder = CacheKeyBuilder(

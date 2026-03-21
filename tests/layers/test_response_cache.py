@@ -1,4 +1,5 @@
 """Tests for ResponseCache."""
+
 from __future__ import annotations
 
 import pytest
@@ -12,6 +13,7 @@ from omnicache_ai.layers.response_cache import ResponseCache
 @pytest.fixture
 def rc():
     from omnicache_ai.core.invalidation import InvalidationEngine
+
     tag_store = InMemoryBackend()
     manager = CacheManager(
         backend=InMemoryBackend(),

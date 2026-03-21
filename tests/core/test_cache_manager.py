@@ -1,4 +1,5 @@
 """Tests for CacheManager."""
+
 from __future__ import annotations
 
 import pytest
@@ -74,7 +75,6 @@ def test_from_settings_memory():
 
 
 def test_from_settings_disk(tmp_path):
-    import os
     settings = OmnicacheSettings(backend="disk", disk_path=str(tmp_path / "cache"))
     manager = CacheManager.from_settings(settings)
     manager.set("x", 42)

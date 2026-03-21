@@ -1,8 +1,9 @@
 """CrewAI task output cache adapter."""
+
 from __future__ import annotations
 
 import pickle
-from typing import TYPE_CHECKING, Any, Callable
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from omnicache_ai.core.cache_manager import CacheManager

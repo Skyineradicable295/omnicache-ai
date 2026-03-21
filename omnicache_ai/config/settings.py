@@ -1,8 +1,9 @@
 """Configuration for omnicache-ai."""
+
 from __future__ import annotations
 
 import os
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Literal
 
 
@@ -22,14 +23,15 @@ class OmnicacheSettings:
     namespace: str = "omnicache"
 
     # Per-type TTL overrides (seconds)
-    ttl_embedding: int | None = 86400   # 24h — embeddings rarely change
-    ttl_retrieval: int | None = 3600    # 1h
-    ttl_context: int | None = 1800      # 30min
-    ttl_response: int | None = 600      # 10min — LLM responses expire fast
+    ttl_embedding: int | None = 86400  # 24h — embeddings rarely change
+    ttl_retrieval: int | None = 3600  # 1h
+    ttl_context: int | None = 1800  # 30min
+    ttl_response: int | None = 600  # 10min — LLM responses expire fast
 
     @classmethod
     def from_env(cls) -> "OmnicacheSettings":
         """Build settings from OMNICACHE_* environment variables."""
+
         def _int_or_none(key: str, default: int | None) -> int | None:
             val = os.environ.get(key)
             if val is None:

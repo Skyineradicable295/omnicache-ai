@@ -1,7 +1,7 @@
 """Tests for CacheKeyBuilder."""
+
 from __future__ import annotations
 
-import pytest
 
 from omnicache_ai.core.key_builder import CacheKeyBuilder
 

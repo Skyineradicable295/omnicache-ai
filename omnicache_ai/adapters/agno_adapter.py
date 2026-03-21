@@ -1,4 +1,5 @@
 """Agno agent cache adapter."""
+
 from __future__ import annotations
 
 import pickle
@@ -36,15 +37,16 @@ class AgnoCacheAdapter:
     def __init__(self, agent: Any, cache_manager: "CacheManager") -> None:
         if not _AGNO_AVAILABLE:
             raise ImportError(
-                "AgnoCacheAdapter requires 'agno'. "
-                "Install with: pip install 'omnicache-ai[agno]'"
+                "AgnoCacheAdapter requires 'agno'. Install with: pip install 'omnicache-ai[agno]'"
             )
         self._agent = agent
         self._manager = cache_manager
 
     def _key(self, message: Any, **kwargs: Any) -> str:
         return self._manager.key_builder.build(
-            "response", str(message), extra={"type": "agno", **{k: str(v) for k, v in kwargs.items()}}
+            "response",
+            str(message),
+            extra={"type": "agno", **{k: str(v) for k, v in kwargs.items()}},
         )
 
     def run(self, message: Any, **kwargs: Any) -> Any:

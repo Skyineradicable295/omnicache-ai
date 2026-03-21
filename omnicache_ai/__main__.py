@@ -1,4 +1,5 @@
 """CLI entry point for omnicache-ai."""
+
 from __future__ import annotations
 
 

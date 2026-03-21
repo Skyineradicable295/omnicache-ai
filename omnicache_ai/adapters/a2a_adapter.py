@@ -1,4 +1,5 @@
 """A2A (Agent-to-Agent) message cache adapter."""
+
 from __future__ import annotations
 
 import pickle

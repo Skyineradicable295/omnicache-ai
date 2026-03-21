@@ -1,4 +1,5 @@
 """LangChain cache adapter."""
+
 from __future__ import annotations
 
 import hashlib
@@ -10,7 +11,7 @@ if TYPE_CHECKING:
 
 try:
     from langchain_core.caches import BaseCache
-    from langchain_core.outputs import Generation
+    from langchain_core.outputs import Generation  # noqa: F401
 
     _LANGCHAIN_AVAILABLE = True
 except ImportError:

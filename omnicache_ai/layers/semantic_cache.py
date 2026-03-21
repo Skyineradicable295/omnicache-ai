@@ -1,4 +1,5 @@
 """Semantic cache layer — the core differentiator of omnicache-ai."""
+
 from __future__ import annotations
 
 import pickle

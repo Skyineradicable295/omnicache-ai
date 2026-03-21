@@ -1,4 +1,5 @@
 """Vector similarity backends: FAISSBackend and ChromaBackend (both optional)."""
+
 from __future__ import annotations
 
 from typing import Any

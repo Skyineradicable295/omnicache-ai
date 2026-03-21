@@ -1,4 +1,5 @@
 """Embedding call interception middleware."""
+
 from __future__ import annotations
 
 import asyncio
@@ -37,6 +38,7 @@ class EmbeddingMiddleware:
 
     def __call__(self, embed_fn: Callable[[str], Any]) -> Callable[[str], np.ndarray]:
         if asyncio.iscoroutinefunction(embed_fn):
+
             @functools.wraps(embed_fn)
             async def async_wrapper(text: str) -> np.ndarray:
                 cached = self._cache.get(text, self._model_id)
@@ -48,6 +50,7 @@ class EmbeddingMiddleware:
 
             return async_wrapper  # type: ignore[return-value]
         else:
+
             @functools.wraps(embed_fn)
             def sync_wrapper(text: str) -> np.ndarray:
                 cached = self._cache.get(text, self._model_id)

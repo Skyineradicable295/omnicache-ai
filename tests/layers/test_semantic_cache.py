@@ -1,7 +1,7 @@
 """Tests for SemanticCache."""
+
 from __future__ import annotations
 
-import numpy as np
 import pytest
 
 from omnicache_ai.backends.memory_backend import InMemoryBackend
@@ -12,7 +12,7 @@ from tests.conftest import mock_embed
 
 @pytest.fixture
 def semantic_cache():
-    faiss = pytest.importorskip("faiss", reason="faiss-cpu not installed")
+    pytest.importorskip("faiss", reason="faiss-cpu not installed")
     exact = InMemoryBackend()
     vector = FAISSBackend(dim=1536)
     return SemanticCache(exact, vector, mock_embed, threshold=0.95)
