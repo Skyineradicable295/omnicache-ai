@@ -278,7 +278,23 @@ flowchart TD
 - Python ≥ 3.12
 - Core dependencies: `diskcache`, `numpy` (installed automatically)
 
-### pip
+### Install from GitHub (recommended — available now)
+
+```bash
+# pip — core (in-memory + disk backends)
+pip install git+https://github.com/ashishpatel26/omnicache-ai.git
+
+# pip — with extras
+pip install "omnicache-ai[langchain,redis] @ git+https://github.com/ashishpatel26/omnicache-ai.git"
+
+# uv — core
+uv add git+https://github.com/ashishpatel26/omnicache-ai.git
+
+# uv — with extras
+uv pip install "omnicache-ai[langchain,redis] @ git+https://github.com/ashishpatel26/omnicache-ai.git"
+```
+
+### pip (PyPI — coming soon)
 
 ```bash
 # Minimal — in-memory + disk backends
@@ -306,7 +322,7 @@ pip install 'omnicache-ai[langgraph,vector-faiss]'
 pip install 'omnicache-ai[all]'
 ```
 
-### uv (recommended)
+### uv
 
 ```bash
 uv add omnicache-ai
@@ -323,7 +339,7 @@ conda install -c conda-forge omnicache-ai
 ### From source
 
 ```bash
-git clone https://github.com/your-org/omnicache-ai
+git clone https://github.com/ashishpatel26/omnicache-ai.git
 cd omnicache-ai
 uv sync --dev         # installs all dev + core deps
 uv run pytest         # verify install
