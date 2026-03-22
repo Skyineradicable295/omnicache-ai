@@ -84,4 +84,6 @@ dev = [
     "pytest-cov>=7.0.0",
     "mypy>=1.10",
     "ruff>=0.4",
+    "mkdocs-material>=9.7.6",
+    "mkdocs-minify-plugin>=0.8.0",
 ]

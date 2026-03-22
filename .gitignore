@@ -44,3 +44,4 @@ omnicache_data/
 # Environment
 .env
 .env.local
+site/

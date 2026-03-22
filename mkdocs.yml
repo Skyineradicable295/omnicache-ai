@@ -1,0 +1,136 @@
+site_name: OmniCache-AI
+site_url: https://ashishpatel26.github.io/omnicache-ai
+site_description: Unified multi-layer caching for AI agent pipelines
+site_author: ashishpatel26
+repo_name: ashishpatel26/omnicache-ai
+repo_url: https://github.com/ashishpatel26/omnicache-ai
+
+theme:
+  name: material
+  logo: assets/omnicache_logo.png
+  favicon: assets/omnicache_logo.png
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - navigation.indexes
+    - content.code.copy
+    - content.code.annotate
+    - content.tabs.link
+    - search.suggest
+    - search.highlight
+    - toc.follow
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: deep purple
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: deep purple
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  icon:
+    repo: fontawesome/brands/github
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/ashishpatel26/omnicache-ai
+    - icon: fontawesome/brands/python
+      link: https://pypi.org/project/omnicache-ai/
+
+copyright: Copyright &copy; 2026 omnicache-ai contributors
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.snippets
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - attr_list
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+
+plugins:
+  - search
+  - minify:
+      minify_html: true
+
+nav:
+  - Home: index.md
+  - Getting Started:
+    - Installation: getting-started/installation.md
+    - Quick Start: getting-started/quickstart.md
+    - Configuration: getting-started/configuration.md
+  - Core:
+    - Overview: core/index.md
+    - CacheManager: core/cache-manager.md
+    - CacheKeyBuilder: core/key-builder.md
+    - Policies: core/policies.md
+    - InvalidationEngine: core/invalidation.md
+    - Settings: core/settings.md
+  - Backends:
+    - Overview: backends/index.md
+    - InMemoryBackend: backends/memory.md
+    - DiskBackend: backends/disk.md
+    - RedisBackend: backends/redis.md
+    - FAISSBackend: backends/faiss.md
+    - ChromaBackend: backends/chroma.md
+  - Cache Layers:
+    - Overview: layers/index.md
+    - ResponseCache: layers/response.md
+    - EmbeddingCache: layers/embedding.md
+    - RetrievalCache: layers/retrieval.md
+    - ContextCache: layers/context.md
+    - SemanticCache: layers/semantic.md
+  - Middleware:
+    - Overview: middleware/index.md
+    - LLMMiddleware: middleware/llm.md
+    - EmbeddingMiddleware: middleware/embedding.md
+    - RetrieverMiddleware: middleware/retriever.md
+  - Adapters:
+    - Overview: adapters/index.md
+    - LangChain: adapters/langchain.md
+    - LangGraph: adapters/langgraph.md
+    - AutoGen: adapters/autogen.md
+    - CrewAI: adapters/crewai.md
+    - Agno: adapters/agno.md
+    - A2A: adapters/a2a.md
+  - Cookbook:
+    - Overview: cookbook/index.md
+    - Core Recipes: cookbook/core.md
+    - LangChain: cookbook/langchain.md
+    - LangGraph: cookbook/langgraph.md
+    - AutoGen: cookbook/autogen.md
+    - CrewAI: cookbook/crewai.md
+    - Agno: cookbook/agno.md
+    - A2A: cookbook/a2a.md
+    - Semantic Cache: cookbook/semantic-cache.md
+    - Redis Backend: cookbook/redis.md
+    - Tag Invalidation: cookbook/invalidation.md
+    - TTL Policies: cookbook/ttl.md
+    - Multi-Framework: cookbook/multi-framework.md
+  - API Reference:
+    - api-reference/index.md
