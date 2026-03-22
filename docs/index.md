@@ -5,36 +5,26 @@ hide:
 ---
 
 <!-- Hero Section -->
-<div class="hero-section" markdown>
-
+<div class="hero-section">
 <div class="hero-badge">
-  <span class="badge-dot"></span> Open Source &mdash; MIT Licensed
+  <span class="badge-dot"></span> Open Source — MIT Licensed
 </div>
-
 <h1 class="hero-title">
   Cache Every Layer of Your<br>
   <span class="gradient-text">AI Agent Pipeline</span>
 </h1>
-
 <p class="hero-subtitle">
   OmniCache-AI is a framework-agnostic caching library that eliminates redundant AI operations.
-  Cache embeddings, retrieval, context, LLM responses, and semantic similarity &mdash;
+  Cache embeddings, retrieval, context, LLM responses, and semantic similarity —
   cut latency and cost by up to 90%.
 </p>
-
 <div class="hero-actions">
-  <a href="getting-started/quickstart/" class="hero-btn hero-btn-primary">
-    Get Started &rarr;
-  </a>
-  <a href="https://github.com/ashishpatel26/omnicache-ai" class="hero-btn hero-btn-secondary">
-    GitHub
-  </a>
+  <a href="getting-started/quickstart/" class="hero-btn hero-btn-primary">Get Started →</a>
+  <a href="https://github.com/ashishpatel26/omnicache-ai" class="hero-btn hero-btn-secondary">GitHub</a>
 </div>
-
 <div class="hero-install">
   <span class="prompt">$</span> pip install git+https://github.com/ashishpatel26/omnicache-ai.git
 </div>
-
 </div>
 
 <!-- Stats -->
@@ -61,49 +51,55 @@ hide:
 
 ## Why OmniCache-AI?
 
-<div class="feature-grid" markdown>
+<div class="grid cards" markdown>
 
-<div class="feature-card" markdown>
-<span class="card-icon">:material-layers-triple-outline:</span>
-<div class="card-title">5 Cache Layers</div>
-<p class="card-desc">Response, Embedding, Retrieval, Context, and Semantic cache layers &mdash; each optimized for its data type and serialization format.</p>
-<span class="card-link">Explore layers &rarr;</span>
-</div>
+-   :material-layers-triple-outline:{ .lg .middle } **5 Cache Layers**
 
-<div class="feature-card" markdown>
-<span class="card-icon">:material-database-outline:</span>
-<div class="card-title">5 Storage Backends</div>
-<p class="card-desc">In-Memory LRU, Disk, Redis, FAISS, and ChromaDB. Pick the backend that matches your scale and persistence needs.</p>
-<span class="card-link">See backends &rarr;</span>
-</div>
+    ---
 
-<div class="feature-card" markdown>
-<span class="card-icon">:material-puzzle-outline:</span>
-<div class="card-title">6 Framework Adapters</div>
-<p class="card-desc">LangChain, LangGraph, AutoGen, CrewAI, Agno, and A2A. Drop-in integration with zero code changes to your existing pipeline.</p>
-<span class="card-link">View adapters &rarr;</span>
-</div>
+    Response, Embedding, Retrieval, Context, and Semantic cache layers — each optimized for its data type and serialization format.
 
-<div class="feature-card" markdown>
-<span class="card-icon">:material-brain:</span>
-<div class="card-title">Semantic Cache</div>
-<p class="card-desc">Returns cached answers for semantically similar queries using cosine similarity &mdash; not just exact string matches.</p>
-<span class="card-link">Learn more &rarr;</span>
-</div>
+    [:octicons-arrow-right-24: Explore layers](layers/index.md)
 
-<div class="feature-card" markdown>
-<span class="card-icon">:material-tag-multiple-outline:</span>
-<div class="card-title">Tag-Based Invalidation</div>
-<p class="card-desc">Tag cache entries by model, session, or deployment. Invalidate thousands of related keys with a single call.</p>
-<span class="card-link">See invalidation &rarr;</span>
-</div>
+-   :material-database-outline:{ .lg .middle } **5 Storage Backends**
 
-<div class="feature-card" markdown>
-<span class="card-icon">:material-timer-outline:</span>
-<div class="card-title">Smart TTL Policies</div>
-<p class="card-desc">Configure time-to-live per cache type. Embeddings last 24h, responses 10min. Customize everything via env vars.</p>
-<span class="card-link">Configure TTL &rarr;</span>
-</div>
+    ---
+
+    In-Memory LRU, Disk, Redis, FAISS, and ChromaDB. Pick the backend that matches your scale and persistence needs.
+
+    [:octicons-arrow-right-24: See backends](backends/index.md)
+
+-   :material-puzzle-outline:{ .lg .middle } **6 Framework Adapters**
+
+    ---
+
+    LangChain, LangGraph, AutoGen, CrewAI, Agno, and A2A. Drop-in integration with zero code changes to your existing pipeline.
+
+    [:octicons-arrow-right-24: View adapters](adapters/index.md)
+
+-   :material-brain:{ .lg .middle } **Semantic Cache**
+
+    ---
+
+    Returns cached answers for semantically similar queries using cosine similarity — not just exact string matches.
+
+    [:octicons-arrow-right-24: Learn more](layers/semantic.md)
+
+-   :material-tag-multiple-outline:{ .lg .middle } **Tag-Based Invalidation**
+
+    ---
+
+    Tag cache entries by model, session, or deployment. Invalidate thousands of related keys with a single call.
+
+    [:octicons-arrow-right-24: See invalidation](core/invalidation.md)
+
+-   :material-timer-outline:{ .lg .middle } **Smart TTL Policies**
+
+    ---
+
+    Configure time-to-live per cache type. Embeddings last 24h, responses 10min. Customize everything via env vars.
+
+    [:octicons-arrow-right-24: Configure TTL](core/policies.md)
 
 </div>
 
@@ -142,7 +138,7 @@ value = manager.get("my_key")  # {"result": "data"}
 
 ## Pipeline Architecture
 
-<div class="pipeline-wrapper" markdown>
+<div class="pipeline-wrapper">
 
 ```mermaid
 flowchart LR
@@ -188,38 +184,38 @@ flowchart LR
 
 ## Get Started
 
-<div class="get-started-grid" markdown>
+<div class="grid cards" markdown>
 
-<a href="getting-started/installation/" class="get-started-card">
-  <span class="gs-icon">:material-download-outline:</span>
-  <div>
-    <div class="gs-title">Installation</div>
-    <p class="gs-desc">Install via pip, uv, or from GitHub</p>
-  </div>
-</a>
+-   :material-download-outline:{ .lg .middle } **Installation**
 
-<a href="getting-started/quickstart/" class="get-started-card">
-  <span class="gs-icon">:material-rocket-launch-outline:</span>
-  <div>
-    <div class="gs-title">Quick Start</div>
-    <p class="gs-desc">Your first cache in 30 seconds</p>
-  </div>
-</a>
+    ---
 
-<a href="cookbook/" class="get-started-card">
-  <span class="gs-icon">:material-book-open-outline:</span>
-  <div>
-    <div class="gs-title">Cookbook</div>
-    <p class="gs-desc">40+ runnable recipes for every framework</p>
-  </div>
-</a>
+    Install via pip, uv, or from GitHub
 
-<a href="api-reference/" class="get-started-card">
-  <span class="gs-icon">:material-code-tags:</span>
-  <div>
-    <div class="gs-title">API Reference</div>
-    <p class="gs-desc">Complete class and method documentation</p>
-  </div>
-</a>
+    [:octicons-arrow-right-24: Install now](getting-started/installation.md)
+
+-   :material-rocket-launch-outline:{ .lg .middle } **Quick Start**
+
+    ---
+
+    Your first cache in 30 seconds
+
+    [:octicons-arrow-right-24: Get started](getting-started/quickstart.md)
+
+-   :material-book-open-outline:{ .lg .middle } **Cookbook**
+
+    ---
+
+    40+ runnable recipes for every framework
+
+    [:octicons-arrow-right-24: Browse recipes](cookbook/index.md)
+
+-   :material-code-tags:{ .lg .middle } **API Reference**
+
+    ---
+
+    Complete class and method documentation
+
+    [:octicons-arrow-right-24: View API](api-reference/index.md)
 
 </div>
