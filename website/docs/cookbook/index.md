@@ -8,6 +8,10 @@ Practical, copy-paste-ready recipes for every supported AI framework and feature
 
 Each recipe is self-contained. Pick the ones relevant to your stack.
 
+:::tip Want runnable code?
+See [Runnable Examples](runnable-examples.md) — all 12 complete, tested examples verified against a local Ollama `gemma3:4b` instance with a pass/fail test runner.
+:::
+
 ---
 
 ## Framework Compatibility

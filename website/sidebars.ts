@@ -76,6 +76,7 @@ const sidebars: SidebarsConfig = {
       label: 'Cookbook',
       link: { type: 'doc', id: 'cookbook/index' },
       items: [
+        'cookbook/runnable-examples',
         'cookbook/core',
         'cookbook/langchain',
         'cookbook/langgraph',
