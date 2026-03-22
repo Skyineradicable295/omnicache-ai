@@ -1,94 +1,148 @@
 ---
 hide:
   - navigation
+  - toc
 ---
 
-<div align="center">
-  <img src="assets/omnicache_logo.png" alt="OmniCache-AI" width="200"/>
-  <h1>OmniCache-AI</h1>
-  <p><strong>Unified multi-layer caching for AI agent pipelines</strong></p>
+<!-- Hero Section -->
+<div class="hero-section" markdown>
 
-  <p>
-    <a href="https://www.python.org/"><img src="https://img.shields.io/badge/python-3.12%2B-3776AB?logo=python&logoColor=white" alt="Python"></a>
-    <a href="https://github.com/ashishpatel26/omnicache-ai/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-22c55e" alt="License"></a>
-    <a href="https://github.com/ashishpatel26/omnicache-ai"><img src="https://img.shields.io/badge/GitHub-omnicache--ai-181717?logo=github" alt="GitHub"></a>
-  </p>
+<div class="hero-badge">
+  <span class="badge-dot"></span> Open Source &mdash; MIT Licensed
 </div>
 
----
+<h1 class="hero-title">
+  Cache Every Layer of Your<br>
+  <span class="gradient-text">AI Agent Pipeline</span>
+</h1>
 
-## What is OmniCache-AI?
+<p class="hero-subtitle">
+  OmniCache-AI is a framework-agnostic caching library that eliminates redundant AI operations.
+  Cache embeddings, retrieval, context, LLM responses, and semantic similarity &mdash;
+  cut latency and cost by up to 90%.
+</p>
 
-**OmniCache-AI** is a framework-agnostic caching library that sits between your application and expensive AI operations. It caches at every stage of the AI pipeline — embeddings, retrieval, context, LLM responses, and semantic similarity — eliminating redundant API calls and dramatically cutting latency and cost.
+<div class="hero-actions">
+  <a href="getting-started/quickstart/" class="hero-btn hero-btn-primary">
+    Get Started &rarr;
+  </a>
+  <a href="https://github.com/ashishpatel26/omnicache-ai" class="hero-btn hero-btn-secondary">
+    GitHub
+  </a>
+</div>
 
-<div class="grid cards" markdown>
-
--   :material-layers-outline:{ .lg .middle } **5 Cache Layers**
-
-    ---
-
-    Response, Embedding, Retrieval, Context, and Semantic cache layers — each optimized for its data type.
-
-    [:octicons-arrow-right-24: Cache Layers](layers/index.md)
-
--   :material-database:{ .lg .middle } **5 Storage Backends**
-
-    ---
-
-    In-Memory (LRU), Disk, Redis, FAISS, and ChromaDB. Pick the right backend for your scale.
-
-    [:octicons-arrow-right-24: Backends](backends/index.md)
-
--   :material-puzzle:{ .lg .middle } **6 Framework Adapters**
-
-    ---
-
-    LangChain, LangGraph, AutoGen, CrewAI, Agno, and A2A. Drop-in integration with zero code changes.
-
-    [:octicons-arrow-right-24: Adapters](adapters/index.md)
-
--   :material-brain:{ .lg .middle } **Semantic Cache**
-
-    ---
-
-    Returns cached answers for semantically similar queries using cosine similarity — not just exact matches.
-
-    [:octicons-arrow-right-24: Semantic Cache](layers/semantic.md)
+<div class="hero-install">
+  <span class="prompt">$</span> pip install git+https://github.com/ashishpatel26/omnicache-ai.git
+</div>
 
 </div>
 
----
+<!-- Stats -->
+<div class="stats-bar">
+  <div class="stat-item">
+    <div class="stat-number">5</div>
+    <div class="stat-label">Cache Layers</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-number">5</div>
+    <div class="stat-label">Backends</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-number">6</div>
+    <div class="stat-label">Adapters</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-number">40+</div>
+    <div class="stat-label">Recipes</div>
+  </div>
+</div>
+
+<hr class="section-divider">
 
 ## Why OmniCache-AI?
 
-| Without caching | With OmniCache-AI |
-|---|---|
-| Every LLM call billed at full token cost | Identical prompts returned instantly, zero tokens |
-| Embeddings re-computed on every request | Vectors stored and reused across sessions |
-| Vector search re-run for same queries | Retrieval results cached by query + top-k |
-| Agent state lost between runs | Session context persisted across turns |
-| Semantically identical questions treated as new | Cosine similarity match returns cached answer |
+<div class="feature-grid" markdown>
 
----
+<div class="feature-card" markdown>
+<span class="card-icon">:material-layers-triple-outline:</span>
+<div class="card-title">5 Cache Layers</div>
+<p class="card-desc">Response, Embedding, Retrieval, Context, and Semantic cache layers &mdash; each optimized for its data type and serialization format.</p>
+<span class="card-link">Explore layers &rarr;</span>
+</div>
+
+<div class="feature-card" markdown>
+<span class="card-icon">:material-database-outline:</span>
+<div class="card-title">5 Storage Backends</div>
+<p class="card-desc">In-Memory LRU, Disk, Redis, FAISS, and ChromaDB. Pick the backend that matches your scale and persistence needs.</p>
+<span class="card-link">See backends &rarr;</span>
+</div>
+
+<div class="feature-card" markdown>
+<span class="card-icon">:material-puzzle-outline:</span>
+<div class="card-title">6 Framework Adapters</div>
+<p class="card-desc">LangChain, LangGraph, AutoGen, CrewAI, Agno, and A2A. Drop-in integration with zero code changes to your existing pipeline.</p>
+<span class="card-link">View adapters &rarr;</span>
+</div>
+
+<div class="feature-card" markdown>
+<span class="card-icon">:material-brain:</span>
+<div class="card-title">Semantic Cache</div>
+<p class="card-desc">Returns cached answers for semantically similar queries using cosine similarity &mdash; not just exact string matches.</p>
+<span class="card-link">Learn more &rarr;</span>
+</div>
+
+<div class="feature-card" markdown>
+<span class="card-icon">:material-tag-multiple-outline:</span>
+<div class="card-title">Tag-Based Invalidation</div>
+<p class="card-desc">Tag cache entries by model, session, or deployment. Invalidate thousands of related keys with a single call.</p>
+<span class="card-link">See invalidation &rarr;</span>
+</div>
+
+<div class="feature-card" markdown>
+<span class="card-icon">:material-timer-outline:</span>
+<div class="card-title">Smart TTL Policies</div>
+<p class="card-desc">Configure time-to-live per cache type. Embeddings last 24h, responses 10min. Customize everything via env vars.</p>
+<span class="card-link">Configure TTL &rarr;</span>
+</div>
+
+</div>
+
+<hr class="section-divider">
+
+## Supported Frameworks
+
+<div class="framework-row">
+  <span class="framework-badge">LangChain</span>
+  <span class="framework-badge">LangGraph</span>
+  <span class="framework-badge">AutoGen</span>
+  <span class="framework-badge">CrewAI</span>
+  <span class="framework-badge">Agno</span>
+  <span class="framework-badge">A2A</span>
+</div>
+
+<hr class="section-divider">
 
 ## Quick Example
 
 ```python
 from omnicache_ai import CacheManager, InMemoryBackend, CacheKeyBuilder
 
+# Create a cache manager in 3 lines
 manager = CacheManager(
     backend=InMemoryBackend(),
     key_builder=CacheKeyBuilder(namespace="myapp"),
 )
 
-# Cache any value
-manager.set("my_key", b"result data", ttl=60)
-value = manager.get("my_key")  # b"result data"
+# Cache any value with optional TTL
+manager.set("my_key", {"result": "data"}, ttl=60)
+value = manager.get("my_key")  # {"result": "data"}
 ```
 
----
+<hr class="section-divider">
 
 ## Pipeline Architecture
+
+<div class="pipeline-wrapper" markdown>
 
 ```mermaid
 flowchart LR
@@ -99,40 +153,73 @@ flowchart LR
     EC -->|miss| CC["Context\nCache"]
     CC -->|miss| LLM(["LLM API"])
 
-    SC -->|hit| R(["Response"])
+    SC -->|hit| R(["Cached\nResponse"])
     RC -->|hit| R
     RET -->|hit| R
     EC -->|hit| R
     CC -->|hit| R
     LLM --> R
 
-    style SC fill:#4c1d95,color:#fff
-    style RC fill:#1e3a5f,color:#fff
-    style RET fill:#14532d,color:#fff
-    style EC fill:#713f12,color:#fff
-    style CC fill:#7f1d1d,color:#fff
+    style Q fill:#06b6d4,color:#fff,stroke:#0891b2
+    style SC fill:#7c3aed,color:#fff,stroke:#6d28d9
+    style RC fill:#2563eb,color:#fff,stroke:#1d4ed8
+    style RET fill:#059669,color:#fff,stroke:#047857
+    style EC fill:#d97706,color:#fff,stroke:#b45309
+    style CC fill:#dc2626,color:#fff,stroke:#b91c1c
+    style LLM fill:#64748b,color:#fff,stroke:#475569
+    style R fill:#06b6d4,color:#fff,stroke:#0891b2
 ```
 
----
+</div>
+
+<hr class="section-divider">
+
+## Without vs. With OmniCache-AI
+
+| Without Caching | With OmniCache-AI |
+|---|---|
+| Every LLM call billed at full token cost | Identical prompts returned instantly, **zero tokens** |
+| Embeddings re-computed on every request | Vectors stored and **reused across sessions** |
+| Vector search re-run for same queries | Retrieval results **cached by query + top_k** |
+| Agent state lost between runs | Session context **persisted across turns** |
+| Similar questions treated as unique | Cosine similarity returns **cached answer** |
+
+<hr class="section-divider">
 
 ## Get Started
 
-<div class="grid cards" markdown>
+<div class="get-started-grid" markdown>
 
--   [:octicons-download-24: **Installation**](getting-started/installation.md)
+<a href="getting-started/installation/" class="get-started-card">
+  <span class="gs-icon">:material-download-outline:</span>
+  <div>
+    <div class="gs-title">Installation</div>
+    <p class="gs-desc">Install via pip, uv, or from GitHub</p>
+  </div>
+</a>
 
-    Install via pip, uv, or from GitHub
+<a href="getting-started/quickstart/" class="get-started-card">
+  <span class="gs-icon">:material-rocket-launch-outline:</span>
+  <div>
+    <div class="gs-title">Quick Start</div>
+    <p class="gs-desc">Your first cache in 30 seconds</p>
+  </div>
+</a>
 
--   [:octicons-rocket-24: **Quick Start**](getting-started/quickstart.md)
+<a href="cookbook/" class="get-started-card">
+  <span class="gs-icon">:material-book-open-outline:</span>
+  <div>
+    <div class="gs-title">Cookbook</div>
+    <p class="gs-desc">40+ runnable recipes for every framework</p>
+  </div>
+</a>
 
-    Your first cache in 30 seconds
-
--   [:octicons-book-24: **Cookbook**](cookbook/index.md)
-
-    40+ runnable recipes for every framework
-
--   [:octicons-code-24: **API Reference**](api-reference/index.md)
-
-    Complete class and method documentation
+<a href="api-reference/" class="get-started-card">
+  <span class="gs-icon">:material-code-tags:</span>
+  <div>
+    <div class="gs-title">API Reference</div>
+    <p class="gs-desc">Complete class and method documentation</p>
+  </div>
+</a>
 
 </div>

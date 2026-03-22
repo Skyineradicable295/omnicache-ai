@@ -9,44 +9,62 @@ theme:
   name: material
   logo: assets/omnicache_logo.png
   favicon: assets/omnicache_logo.png
+  font:
+    text: Inter
+    code: JetBrains Mono
   features:
     - navigation.tabs
+    - navigation.tabs.sticky
     - navigation.sections
     - navigation.expand
     - navigation.top
     - navigation.indexes
+    - navigation.instant
+    - navigation.instant.progress
     - content.code.copy
     - content.code.annotate
     - content.tabs.link
     - search.suggest
     - search.highlight
+    - search.share
     - toc.follow
+    - header.autohide
   palette:
-    - media: "(prefers-color-scheme: light)"
-      scheme: default
-      primary: indigo
-      accent: deep purple
-      toggle:
-        icon: material/brightness-7
-        name: Switch to dark mode
     - media: "(prefers-color-scheme: dark)"
       scheme: slate
-      primary: indigo
-      accent: deep purple
+      primary: custom
+      accent: custom
       toggle:
         icon: material/brightness-4
         name: Switch to light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
   icon:
     repo: fontawesome/brands/github
+    admonition:
+      tip: material/lightbulb-outline
+      note: material/note-outline
+      warning: material/alert-outline
+
+extra_css:
+  - stylesheets/extra.css
 
 extra:
   social:
     - icon: fontawesome/brands/github
       link: https://github.com/ashishpatel26/omnicache-ai
+      name: GitHub
     - icon: fontawesome/brands/python
       link: https://pypi.org/project/omnicache-ai/
+      name: PyPI
+  generator: false
 
-copyright: Copyright &copy; 2026 omnicache-ai contributors
+copyright: "&copy; 2026 OmniCache-AI Contributors"
 
 markdown_extensions:
   - admonition
@@ -67,11 +85,15 @@ markdown_extensions:
   - pymdownx.emoji:
       emoji_index: !!python/name:material.extensions.emoji.twemoji
       emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - pymdownx.mark
+  - pymdownx.critic
+  - pymdownx.keys
   - attr_list
   - md_in_html
   - tables
   - toc:
-      permalink: true
+      permalink: "#"
+      toc_depth: 3
 
 plugins:
   - search
