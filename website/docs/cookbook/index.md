@@ -12,6 +12,10 @@ Each recipe is self-contained. Pick the ones relevant to your stack.
 See [Runnable Examples](runnable-examples.md) — all 12 complete, tested examples verified against a local Ollama `gemma3:4b` instance with a pass/fail test runner.
 :::
 
+:::info See real output
+See [Example Outputs](example-outputs.md) — actual output captured from every example, including LLM responses and cache speedup timings (up to **171,994x faster** on second run).
+:::
+
 ---
 
 ## Framework Compatibility
