@@ -18,6 +18,7 @@ from omnicache_ai.backends.vector_backend import FAISSBackend
 from omnicache_ai.backends.memory_backend import InMemoryBackend
 from omnicache_ai import SemanticCache
 import hashlib
+import time
 import numpy as np
 
 import sys
@@ -54,17 +55,32 @@ def main() -> None:
     q1 = "How to reduce p95 latency?"
     answer = "Profile hot path, add caching, optimize DB queries."
 
+    t0 = time.perf_counter()
     cache.set(q1, answer)
+    t1 = time.perf_counter()
+
+    t2 = time.perf_counter()
+    hit = cache.get(q1)
+    t3 = time.perf_counter()
     print("=== Exact hit (same text) ===")
-    print(cache.get(q1))  # exact key hit
+    print(hit)
+    print(f"set : {t1 - t0:.6f}s")
+    print(f"get : {t3 - t2:.6f}s  ({(t1 - t0) / (t3 - t2):.0f}x faster)")
 
     print("\n=== Miss (different text, deterministic embed != same vector) ===")
-    print(cache.get("How can I lower p95 response latency?"))  # None — different hash
+    t4 = time.perf_counter()
+    miss = cache.get("How can I lower p95 response latency?")
+    t5 = time.perf_counter()
+    print(miss)
+    print(f"get (miss): {t5 - t4:.6f}s")
 
-    # Demonstrate semantic similarity by storing with same vector (real embed would find this)
     print("\n=== Direct exact cache hit ===")
     cache.set("What is p95 latency optimization?", "Measure, profile, then cache hot paths.")
-    print(cache.get("What is p95 latency optimization?"))
+    t6 = time.perf_counter()
+    result = cache.get("What is p95 latency optimization?")
+    t7 = time.perf_counter()
+    print(result)
+    print(f"get : {t7 - t6:.6f}s")
 
 
 if __name__ == "__main__":

@@ -14,6 +14,7 @@ from langchain_ollama import ChatOllama
 from langchain_core.globals import set_llm_cache
 
 import sys
+import time
 from pathlib import Path
 from typing import Annotated, Any
 from typing_extensions import TypedDict
@@ -177,6 +178,7 @@ def main() -> None:
         "5xx error rate is now 18% in ap-south region and rising."
     )
 
+    t0 = time.perf_counter()
     result_1 = app.invoke(
         {
             "messages": [("user", incident_text)],
@@ -185,10 +187,13 @@ def main() -> None:
         },
         config=thread,
     )
+    t1 = time.perf_counter()
     print("=== First Run (LLM call expected) ===")
     print("Severity:", result_1["severity"])
     print("Plan:\n", result_1["action_plan"])
+    print(f"Time: {t1 - t0:.3f}s")
 
+    t2 = time.perf_counter()
     result_2 = app.invoke(
         {
             "messages": [("user", incident_text)],
@@ -197,9 +202,11 @@ def main() -> None:
         },
         config=thread,
     )
+    t3 = time.perf_counter()
     print("\n=== Second Run (cache/checkpoint expected) ===")
     print("Severity:", result_2["severity"])
     print("Plan:\n", result_2["action_plan"])
+    print(f"Time: {t3 - t2:.3f}s  ({(t1 - t0) / (t3 - t2):.0f}x faster)")
 
 
 if __name__ == "__main__":

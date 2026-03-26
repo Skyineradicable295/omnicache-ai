@@ -10,6 +10,7 @@ from omnicache_ai import CacheKeyBuilder, CacheManager, InMemoryBackend
 
 import importlib
 import sys
+import time
 from pathlib import Path
 from typing import Any
 
@@ -82,13 +83,19 @@ def main() -> None:
         "for timeout handling on partner callbacks."
     )
 
+    t0 = time.perf_counter()
     memo_1 = generate_memo(cached_agent, notes)
+    t1 = time.perf_counter()
     print("=== First Run (LLM call expected) ===")
     print(memo_1)
+    print(f"Time: {t1 - t0:.3f}s")
 
+    t2 = time.perf_counter()
     memo_2 = generate_memo(cached_agent, notes)
+    t3 = time.perf_counter()
     print("\n=== Second Run (cache hit expected) ===")
     print(memo_2)
+    print(f"Time: {t3 - t2:.3f}s  ({(t1 - t0) / (t3 - t2):.0f}x faster)")
 
 
 if __name__ == "__main__":

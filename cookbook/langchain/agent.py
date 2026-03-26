@@ -12,6 +12,7 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.globals import set_llm_cache
 
 import sys
+import time
 from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
@@ -65,13 +66,20 @@ def main() -> None:
         ),
     }
 
+    t0 = time.perf_counter()
     r1 = chain.invoke(inputs)
+    t1 = time.perf_counter()
     print("=== First Run (LLM call expected) ===")
     print(r1.content)
+    print(f"Time: {t1 - t0:.3f}s")
 
+    t2 = time.perf_counter()
     r2 = chain.invoke(inputs)
+    t3 = time.perf_counter()
     print("\n=== Second Run (cache hit expected) ===")
     print(r2.content)
+    print(f"Time: {t3 - t2:.3f}s")
+    print(f"\nSpeedup: {(t1 - t0) / (t3 - t2):.1f}x faster")
 
 
 if __name__ == "__main__":

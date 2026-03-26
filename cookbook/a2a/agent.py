@@ -11,6 +11,7 @@ from langchain_ollama import ChatOllama
 
 import asyncio
 import sys
+import time
 from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
@@ -70,13 +71,19 @@ async def main() -> None:
 
     goal = "Design a safe rollout plan for migrating payment webhooks to async ingestion"
 
+    t0 = time.perf_counter()
     out1 = await pipeline(goal)
+    t1 = time.perf_counter()
     print("=== First Run (three LLM stages expected) ===")
     print(out1["review"])
+    print(f"Time: {t1 - t0:.3f}s")
 
+    t2 = time.perf_counter()
     out2 = await pipeline(goal)
+    t3 = time.perf_counter()
     print("\n=== Second Run (A2A cache hits expected) ===")
     print(out2["review"])
+    print(f"Time: {t3 - t2:.3f}s  ({(t1 - t0) / (t3 - t2):.0f}x faster)")
 
 
 if __name__ == "__main__":

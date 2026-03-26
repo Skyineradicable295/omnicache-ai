@@ -8,6 +8,7 @@ from langchain_core.globals import set_llm_cache
 
 import asyncio
 import sys
+import time
 from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
@@ -44,14 +45,22 @@ async def main() -> None:
         return {"reviewed": text}
 
     topic = "Reducing checkout latency using caching and async webhook processing"
+
+    t0 = time.perf_counter()
     outline = planner_chain.invoke({"topic": topic}).content
     reviewed1 = await reviewer.aprocess(review_fn, {"outline": outline})
-    reviewed2 = await reviewer.aprocess(review_fn, {"outline": outline})
-
+    t1 = time.perf_counter()
     print("=== Multi-Framework First Run ===")
     print(reviewed1["reviewed"])
+    print(f"Time: {t1 - t0:.3f}s")
+
+    t2 = time.perf_counter()
+    outline2 = planner_chain.invoke({"topic": topic}).content
+    reviewed2 = await reviewer.aprocess(review_fn, {"outline": outline2})
+    t3 = time.perf_counter()
     print("\n=== Multi-Framework Second Run (cache hit expected) ===")
     print(reviewed2["reviewed"])
+    print(f"Time: {t3 - t2:.3f}s  ({(t1 - t0) / (t3 - t2):.0f}x faster)")
 
 
 if __name__ == "__main__":
